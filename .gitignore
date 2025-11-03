@@ -1,0 +1,16 @@
+# Ignorar node_modules y entornos
+node_modules/
+.env
+.env.local
+dist/
+.vscode/
+.DS_Store
+Thumbs.db
+npm-debug.log*
+yarn-error.log*
+
+# Archivos específicos
+stockella-admin/node_modules/
+stockella-backend/node_modules/
+stockella-admin/.env
+stockella-backend/.env

@@ -1,0 +1,21 @@
+# Node
+node_modules/
+.env
+.env.local
+.env.production
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# IDEs / Config
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Sistema operativo
+*.log
+*.tmp
+
+# Archivos sensibles
+AWS_*

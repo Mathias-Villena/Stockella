@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #f6f7fb;
+  --color-card: #ffffff;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: #1f2937; /* gray-800 */
+}
