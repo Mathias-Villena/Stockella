@@ -1,47 +1,95 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../services/api";
+import Swal from "sweetalert2";
 
-export default function ProductoModal({ onClose, onCreated }) {
+export default function ProductoModal({ onClose, onCreated, producto }) {
   const [form, setForm] = useState({
+    codigo: "",
     nombre: "",
     descripcion: "",
     precio: "",
     stock_actual: "",
     stock_minimo: "",
     id_categoria: "",
+    unidad_medida: "",
   });
+
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Cargar datos si es edición
+  useEffect(() => {
+    if (producto) {
+      setForm({
+        codigo: producto.codigo || "",
+        nombre: producto.nombre || "",
+        descripcion: producto.descripcion || "",
+        precio: producto.precio || "",
+        stock_actual: producto.stock_actual || "",
+        stock_minimo: producto.stock_minimo || "",
+        id_categoria: producto.id_categoria || "",
+        unidad_medida: producto.unidad_medida || "",
+      });
+    } else {
+      setForm({
+        codigo: "",
+        nombre: "",
+        descripcion: "",
+        precio: "",
+        stock_actual: "",
+        stock_minimo: "",
+        id_categoria: "",
+        unidad_medida: "",
+      });
+    }
+  }, [producto]);
+
+  // Manejar cambios en los inputs
   const onChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const onCreate = async (e) => {
+  // Guardar producto (crear o editar)
+  const onSubmit = async (e) => {
     e.preventDefault();
-    try {
-      setLoading(true);
-      // 1️⃣ Crear producto
-      const { data: p } = await api.post("/productos", form);
+    if (!form.nombre || !form.codigo || !form.precio) {
+      Swal.fire("Campos incompletos", "Llena al menos código, nombre y precio.", "warning");
+      return;
+    }
 
-      // 2️⃣ Subir imagen a S3 si hay archivo
-      if (file) {
+    setLoading(true);
+    try {
+      let productoId = producto?.id_producto;
+
+      if (producto) {
+        // 🔹 Editar producto
+        await api.put(`/productos/${producto.id_producto}`, form);
+        Swal.fire("✅ Producto actualizado", "Los cambios se guardaron correctamente.", "success");
+      } else {
+        // 🔹 Crear producto
+        const { data: p } = await api.post("/productos", form);
+        productoId = p.id_producto;
+        Swal.fire("✅ Producto registrado", "El producto fue creado exitosamente.", "success");
+      }
+
+      // 🔹 Subir imagen (nuevo o reemplazo)
+      if (file && productoId) {
         const fd = new FormData();
-        fd.append("id_producto", p.id_producto);
+        fd.append("id_producto", productoId);
         fd.append("comoDataset", "true");
         fd.append("file", file);
 
         await api.post("/upload/producto", fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
+        Swal.fire("📸 Imagen subida", "La imagen del producto fue guardada correctamente.", "success");
       }
 
-      alert("✅ Producto registrado correctamente");
       onCreated();
       onClose();
     } catch (err) {
       console.error(err);
-      alert("❌ Error al crear producto");
+      Swal.fire("❌ Error", "No se pudo guardar el producto.", "error");
     } finally {
       setLoading(false);
     }
@@ -50,25 +98,43 @@ export default function ProductoModal({ onClose, onCreated }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <form
-        onSubmit={onCreate}
-        className="bg-white rounded-xl p-6 shadow-lg w-[420px]"
+        onSubmit={onSubmit}
+        className="bg-white rounded-xl p-6 shadow-lg w-[420px] relative"
       >
-        <h2 className="text-lg font-semibold mb-4">Nuevo Producto</h2>
+        <h2 className="text-lg font-semibold mb-4 text-center">
+          {producto ? "✎ Editar Producto" : "➕ Nuevo Producto"}
+        </h2>
 
+        {/* Código */}
+        <input
+          name="codigo"
+          placeholder="Código"
+          value={form.codigo}
+          onChange={onChange}
+          className="border w-full mb-2 p-2 rounded"
+          required
+        />
+
+        {/* Nombre */}
         <input
           name="nombre"
           placeholder="Nombre"
           value={form.nombre}
           onChange={onChange}
           className="border w-full mb-2 p-2 rounded"
+          required
         />
-        <input
+
+        {/* Descripción */}
+        <textarea
           name="descripcion"
           placeholder="Descripción"
           value={form.descripcion}
           onChange={onChange}
           className="border w-full mb-2 p-2 rounded"
         />
+
+        {/* Precio */}
         <input
           name="precio"
           type="number"
@@ -76,7 +142,10 @@ export default function ProductoModal({ onClose, onCreated }) {
           value={form.precio}
           onChange={onChange}
           className="border w-full mb-2 p-2 rounded"
+          required
         />
+
+        {/* Stock actual */}
         <input
           name="stock_actual"
           type="number"
@@ -85,6 +154,8 @@ export default function ProductoModal({ onClose, onCreated }) {
           onChange={onChange}
           className="border w-full mb-2 p-2 rounded"
         />
+
+        {/* Stock mínimo */}
         <input
           name="stock_minimo"
           type="number"
@@ -94,7 +165,28 @@ export default function ProductoModal({ onClose, onCreated }) {
           className="border w-full mb-2 p-2 rounded"
         />
 
-        {/* Subida de imagen */}
+        {/* Unidad */}
+        <input
+          name="unidad_medida"
+          placeholder="Unidad de medida (ej. unidad, kg, litro)"
+          value={form.unidad_medida}
+          onChange={onChange}
+          className="border w-full mb-2 p-2 rounded"
+        />
+
+        {/* Imagen actual */}
+        {producto?.imagen_principal && (
+          <div className="mb-2">
+            <p className="text-sm text-gray-600 mb-1">Imagen actual:</p>
+            <img
+              src={producto.imagen_principal}
+              alt="Imagen actual"
+              className="w-full h-32 object-cover rounded-lg border"
+            />
+          </div>
+        )}
+
+        {/* Nueva imagen */}
         <input
           type="file"
           accept="image/*"
@@ -102,18 +194,23 @@ export default function ProductoModal({ onClose, onCreated }) {
           className="bg-gray-100 px-3 py-2 rounded-lg mb-3 w-full"
         />
 
+        {/* Botones */}
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 text-white w-full py-2 rounded hover:bg-blue-700"
+          className="bg-[#1B59F8] hover:bg-[#174bd3] text-white w-full py-2 rounded mb-2"
         >
-          {loading ? "Subiendo..." : "Crear producto"}
+          {loading
+            ? "Guardando..."
+            : producto
+            ? "Actualizar Producto"
+            : "Crear Producto"}
         </button>
 
         <button
           type="button"
           onClick={onClose}
-          className="mt-2 w-full py-2 bg-gray-200 rounded hover:bg-gray-300"
+          className="w-full py-2 bg-gray-200 rounded hover:bg-gray-300"
         >
           Cancelar
         </button>

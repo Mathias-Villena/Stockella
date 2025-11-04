@@ -7,7 +7,9 @@ exports.listar = async (req, res) => {
 
     const where = {};
     if (q) where.nombre = { [Op.iLike]: `%${q}%` };
-    if (categoria) where.id_categoria = categoria;
+    if (categoria) where.id_categoria = Number(categoria);
+
+    console.log("🔍 Filtros aplicados:", where);
 
     const pageNum  = Math.max(parseInt(page)  || 1, 1);
     const limitNum = Math.min(Math.max(parseInt(limit) || 9, 1), 100);
@@ -16,7 +18,7 @@ exports.listar = async (req, res) => {
     const { count, rows } = await Producto.findAndCountAll({
       where,
       include: [
-        { model: Categoria, attributes: ['nombre'] },
+        { model: Categoria, attributes: ['nombre'], required: false },
         {
           model: ImagenProducto,
           attributes: ['url', 'es_principal'],
@@ -48,7 +50,10 @@ exports.listar = async (req, res) => {
 };
 
 
+
 exports.crear = async (req, res) => {
+  console.log("📦 Datos recibidos del frontend:", req.body);
+
   const p = await Producto.create(req.body);
   await evaluarAlerta(p);
   res.status(201).json({ id_producto: p.id_producto });
@@ -68,14 +73,18 @@ exports.eliminar = async (req, res) => {
   res.json({ ok: true });
 };
 
-// 🚨 Generar alerta si el stock está bajo
 async function evaluarAlerta(prod) {
-  if (!prod) return;
-  if (prod.stock_actual <= prod.stock_minimo) {
-    await Alerta.create({
-      id_producto: prod.id_producto,
-      tipo: 'Stock Bajo',
-      mensaje: `Stock actual ${prod.stock_actual} ≤ mínimo ${prod.stock_minimo}`,
-    });
+  try {
+    if (!prod) return;
+    if (prod.stock_actual <= prod.stock_minimo) {
+      await Alerta.create({
+        id_producto: prod.id_producto,
+        tipo: 'Stock Bajo',
+        mensaje: `Stock actual ${prod.stock_actual} ≤ mínimo ${prod.stock_minimo}`
+      });
+    }
+  } catch (e) {
+    console.error("❌ Error evaluando alerta:", e);
   }
 }
+
