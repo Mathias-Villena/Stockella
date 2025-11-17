@@ -7,7 +7,7 @@ import Usuarios from "../pages/Usuarios";
 import ProtectedRoute from "./ProtectedRoute";
 import Alertas from "../pages/Alertas";
 import Movimientos from "../pages/Movimientos";
-
+import DatasetML from "../pages/DatasetML";
 export const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
   {
@@ -23,6 +23,7 @@ export const router = createBrowserRouter([
       { path: "usuarios", element: <Usuarios /> },
       { path: "movimientos", element: <Movimientos /> },
       { path: "alertas", element: <Alertas /> },
+      { path: "dataset", element: <DatasetML /> },
 
     ],
   },

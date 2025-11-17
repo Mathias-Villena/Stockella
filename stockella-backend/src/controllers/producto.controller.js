@@ -18,7 +18,7 @@ exports.listar = async (req, res) => {
     const { count, rows } = await Producto.findAndCountAll({
       where,
       include: [
-        { model: Categoria, attributes: ['nombre'], required: false },
+        { model: Categoria, as:"Categoria",attributes: ['nombre'], required: false },
         {
           model: ImagenProducto,
           attributes: ['url', 'es_principal'],

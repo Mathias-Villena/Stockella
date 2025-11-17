@@ -120,8 +120,9 @@ const Configuracion = sequelize.define('Configuracion', {
 Usuario.belongsTo(Rol, { foreignKey: 'id_rol' });
 Rol.hasMany(Usuario, { foreignKey: 'id_rol' });
 
-Producto.belongsTo(Categoria, { foreignKey: 'id_categoria' });
-Categoria.hasMany(Producto, { foreignKey: 'id_categoria' });
+Producto.belongsTo(Categoria, { foreignKey: 'id_categoria', as: 'Categoria' });
+Categoria.hasMany(Producto, { foreignKey: 'id_categoria', as: 'Productos' });
+
 
 ImagenProducto.belongsTo(Producto, { foreignKey: 'id_producto' });
 Producto.hasMany(ImagenProducto, { foreignKey: 'id_producto' });

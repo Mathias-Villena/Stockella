@@ -16,6 +16,7 @@ app.use("/api/dashboard", require("./routes/dashboard.routes"));
 app.use("/api/movimientos", require("./routes/movimiento.routes"));
 app.use("/api/alertas", require("./routes/alerta.routes"));
 app.use("/api/upload", require("./routes/upload.routes"));
+app.use("/dataset", require("./routes/datasetml.routes"));
 
 
 // Swagger
