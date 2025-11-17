@@ -1,12 +1,12 @@
 const { DatasetML, Producto } = require("../models");
 const { Op } = require("sequelize");
+const registrarAccion = require("../middlewares/auditoria");
 
 exports.listar = async (req, res) => {
   try {
     const { q, producto, page = 1, limit = 12 } = req.query;
 
     const where = {};
-
     if (q) where.etiqueta = { [Op.iLike]: `%${q}%` };
     if (producto) where.id_producto = Number(producto);
 
@@ -16,12 +16,7 @@ exports.listar = async (req, res) => {
 
     const { count, rows } = await DatasetML.findAndCountAll({
       where,
-      include: [
-        {
-          model: Producto,
-          attributes: ["nombre"],
-        },
-      ],
+      include: [{ model: Producto, attributes: ["nombre"] }],
       limit: l,
       offset,
       order: [["id_dataset", "DESC"]],
@@ -48,7 +43,15 @@ exports.listar = async (req, res) => {
 exports.eliminar = async (req, res) => {
   try {
     const { id } = req.params;
+
+    await registrarAccion(
+      req.user.id_usuario,
+      "CONFIGURACION",
+      `Eliminó dataset con ID ${id}`
+    );
+
     await DatasetML.destroy({ where: { id_dataset: id } });
+
     res.json({ ok: true });
   } catch (e) {
     console.error("❌ Error eliminando dataset:", e);

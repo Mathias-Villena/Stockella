@@ -51,7 +51,15 @@ exports.listar = async (req, res) => {
 exports.crear = async (req, res) => {
   const { nombre, email, password, id_rol, estado = true } = req.body;
   const hash = await bcrypt.hash(password, 10);
+
   const nuevo = await Usuario.create({ nombre, email, password: hash, id_rol, estado });
+
+  await registrarAccion(
+    req.user.id_usuario,
+    "CREAR",
+    `Creó usuario '${nombre}'`
+  );
+
   res.status(201).json({ id_usuario: nuevo.id_usuario });
 };
 
@@ -61,16 +69,35 @@ exports.crear = async (req, res) => {
 exports.actualizar = async (req, res) => {
   const { id } = req.params;
   const payload = { ...req.body };
-  if (payload.password) payload.password = await bcrypt.hash(payload.password, 10);
+
+  if (payload.password)
+    payload.password = await bcrypt.hash(payload.password, 10);
+
   await Usuario.update(payload, { where: { id_usuario: id } });
+
+  await registrarAccion(
+    req.user.id_usuario,
+    "ACTUALIZAR",
+    `Actualizó usuario ID ${id}`
+  );
+
   res.json({ ok: true });
 };
+
 
 // ==========================
 // ELIMINAR USUARIO
 // ==========================
 exports.eliminar = async (req, res) => {
   const { id } = req.params;
+
+  await registrarAccion(
+    req.user.id_usuario,
+    "CONFIGURACION",
+    `Eliminó usuario ID ${id}`
+  );
+
   await Usuario.destroy({ where: { id_usuario: id } });
+
   res.json({ ok: true });
 };

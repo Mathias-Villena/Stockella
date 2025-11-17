@@ -1,5 +1,6 @@
 const { Movimiento, Producto, Usuario, Alerta } = require("../models");
 const { Op } = require("sequelize");
+const registrarAccion = require("../middlewares/auditoria");
 
 // =========================
 // 📦 LISTAR MOVIMIENTOS
@@ -40,22 +41,23 @@ exports.listar = async (req, res) => {
 exports.crear = async (req, res) => {
   try {
     const { id_producto, tipo, cantidad, motivo } = req.body;
-    const id_usuario = req.user?.id_usuario; // tomado del token JWT
+    const id_usuario = req.user?.id_usuario;
 
     // Validar existencia
     const prod = await Producto.findByPk(id_producto);
     if (!prod) return res.status(404).json({ error: "Producto no encontrado" });
 
-    let nuevoStock = prod.stock_actual;
+    const oldStock = prod.stock_actual;
+    let newStock = oldStock;
 
     // Actualizar stock según tipo
     if (tipo === "Entrada") {
-      nuevoStock += Number(cantidad);
+      newStock += Number(cantidad);
     } else if (tipo === "Salida") {
-      if (prod.stock_actual < cantidad) {
+      if (oldStock < cantidad) {
         return res.status(400).json({ error: "Stock insuficiente para salida" });
       }
-      nuevoStock -= Number(cantidad);
+      newStock -= Number(cantidad);
     } else {
       return res.status(400).json({ error: "Tipo inválido (Entrada o Salida)" });
     }
@@ -72,16 +74,23 @@ exports.crear = async (req, res) => {
 
     // Actualizar producto
     await Producto.update(
-      { stock_actual: nuevoStock },
+      { stock_actual: newStock },
       { where: { id_producto } }
     );
 
+    // Registrar auditoría
+    await registrarAccion(
+      id_usuario,
+      "ACTUALIZAR",
+      `Modificó stock de '${prod.nombre}' de ${oldStock} → ${newStock}`
+    );
+
     // Generar alerta si stock bajo
-    if (nuevoStock <= prod.stock_minimo) {
+    if (newStock <= prod.stock_minimo) {
       await Alerta.create({
         id_producto,
         tipo: "Stock Bajo",
-        mensaje: `El producto "${prod.nombre}" tiene stock bajo (${nuevoStock})`,
+        mensaje: `El producto "${prod.nombre}" tiene stock bajo (${newStock})`,
       });
     }
 

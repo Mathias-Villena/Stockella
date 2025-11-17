@@ -1,9 +1,7 @@
 const { Alerta, Producto } = require("../models");
 const { Op } = require("sequelize");
+const registrarAccion = require("../middlewares/auditoria");
 
-// ===============================
-// Obtener todas las alertas
-// ===============================
 exports.listar = async (req, res) => {
   try {
     const { tipo, atendida } = req.query;
@@ -25,9 +23,6 @@ exports.listar = async (req, res) => {
   }
 };
 
-// ===============================
-// Marcar alerta como atendida
-// ===============================
 exports.marcarAtendida = async (req, res) => {
   try {
     const { id } = req.params;
@@ -36,6 +31,13 @@ exports.marcarAtendida = async (req, res) => {
     if (!alerta) return res.status(404).json({ error: "Alerta no encontrada" });
 
     await alerta.update({ atendida: true });
+
+    await registrarAccion(
+      req.user.id_usuario,
+      "ACTUALIZAR",
+      `Marcó alerta como atendida (ID ${id})`
+    );
+
     res.json({ mensaje: "Alerta marcada como atendida", alerta });
   } catch (err) {
     console.error("❌ Error al actualizar alerta:", err);

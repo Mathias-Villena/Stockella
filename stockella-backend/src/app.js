@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./docs/swagger");
+const auditoriaRoutes = require('./routes/auditoria.routes');
 require("dotenv").config();
 
 const app = express();
@@ -16,7 +17,11 @@ app.use("/api/dashboard", require("./routes/dashboard.routes"));
 app.use("/api/movimientos", require("./routes/movimiento.routes"));
 app.use("/api/alertas", require("./routes/alerta.routes"));
 app.use("/api/upload", require("./routes/upload.routes"));
-app.use("/dataset", require("./routes/datasetml.routes"));
+app.use("/api/dataset", require("./routes/datasetml.routes"));
+
+app.use('/api/auditoria', auditoriaRoutes);
+app.use("/api/reportes", require("./routes/reporte.routes"));
+app.use("/api/configuracion", require("./routes/configuracion.routes"));
 
 
 // Swagger

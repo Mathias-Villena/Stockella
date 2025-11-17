@@ -19,6 +19,7 @@ function Item({ to, label, icon }) {
 export default function Sidebar() {
   return (
     <aside className="w-64 bg-white h-screen p-4 shadow-[0_8px_24px_rgba(0,0,0,.06)] sticky top-0">
+      
       {/* LOGO */}
       <div className="flex items-center gap-3 mb-6">
         <div className="h-10 w-10 rounded-xl bg-[#1B59F8] grid place-content-center text-white font-bold">
@@ -37,9 +38,12 @@ export default function Sidebar() {
         <Item to="/usuarios" label="Usuarios" icon="👥" />
         <Item to="/movimientos" label="Movimientos" icon="💼" />
         <Item to="/alertas" label="Alertas" icon="⚠️" />
-
-        {/* 🧠 NUEVO: DATASET ML */}
         <Item to="/dataset" label="Dataset ML" icon="🧠" />
+
+        {/* 🔥 NUEVO */}
+        <Item to="/auditoria" label="Auditoría" icon="📝" />
+        <Item to="/reportes" label="Reportes" icon="📑" />
+        <Item to="/configuracion" label="Configuración" icon="⚙️" />
       </nav>
     </aside>
   );

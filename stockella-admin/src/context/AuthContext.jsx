@@ -9,22 +9,29 @@ export default function AuthProvider({ children }) {
     const u = localStorage.getItem("stk_user");
     return u ? JSON.parse(u) : null;
   });
+
   const [token, setToken] = useState(() => localStorage.getItem("stk_token"));
   const [loading, setLoading] = useState(false);
 
-  // 🔄 Verificar sesión almacenada
+  // 🔄 Cargar token inicial
   useEffect(() => {
-    if (token) api.defaults.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
   }, [token]);
 
-  // 🔑 Iniciar sesión
+  // 🔑 LOGIN
   const login = async (email, password) => {
     setLoading(true);
     try {
       const { data } = await api.post("/auth/login", { email, password });
+
       localStorage.setItem("stk_token", data.token);
       localStorage.setItem("stk_user", JSON.stringify(data.usuario));
-      api.defaults.headers.Authorization = `Bearer ${data.token}`;
+
+      // ⬅️ ESTE ES EL FIX REAL
+      api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+
       setUser(data.usuario);
       setToken(data.token);
     } catch (e) {
@@ -35,22 +42,23 @@ export default function AuthProvider({ children }) {
     }
   };
 
-  // 🚪 Cerrar sesión
+  // 🚪 LOGOUT
   const logout = () => {
     localStorage.removeItem("stk_token");
     localStorage.removeItem("stk_user");
+
     setUser(null);
     setToken(null);
-    delete api.defaults.headers.Authorization;
+
+    delete api.defaults.headers.common["Authorization"];
   };
 
-  // 🧩 Verificar permisos según rol
+  // 🧩 ROLES
   const hasRole = (...rolesPermitidos) => {
     if (!user) return false;
     return rolesPermitidos.includes(user.rol);
   };
 
-  // 🧱 Contexto compartido
   return (
     <AuthCtx.Provider
       value={{

@@ -8,6 +8,10 @@ import ProtectedRoute from "./ProtectedRoute";
 import Alertas from "../pages/Alertas";
 import Movimientos from "../pages/Movimientos";
 import DatasetML from "../pages/DatasetML";
+import Auditoria from "../pages/Auditoria";
+import Reportes from "../pages/Reportes";
+import Configuracion from "../pages/Configuracion";
+
 export const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
   {
@@ -24,6 +28,10 @@ export const router = createBrowserRouter([
       { path: "movimientos", element: <Movimientos /> },
       { path: "alertas", element: <Alertas /> },
       { path: "dataset", element: <DatasetML /> },
+        // 📌 NUEVAS RUTAS
+  { path: "auditoria", element: <Auditoria /> },
+  { path: "reportes", element: <Reportes /> },
+  { path: "configuracion", element: <Configuracion /> },
 
     ],
   },
