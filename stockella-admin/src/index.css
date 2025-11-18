@@ -1,11 +1,89 @@
+/* ================================
+   IMPORT TAILWIND v4
+================================ */
 @import "tailwindcss";
 
-@theme {
-  --color-bg: #f6f7fb;
-  --color-card: #ffffff;
+/* ================================
+   VARIABLES PERSONALIZADAS
+================================ */
+:root {
+  --color-bg: #f6f7fb;    /* Fondo suave */
+  --color-card: #ffffff;  /* Tarjetas blancas */
 }
 
+/* ================================
+   CONFIG GLOBAL DEL BODY
+================================ */
 body {
   background-color: var(--color-bg);
   color: #1f2937; /* gray-800 */
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ================================
+   ANIMACIONES
+================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.15s ease-out forwards;
+}
+
+@keyframes modalUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-modalUp {
+  animation: modalUp 0.25s ease-out;
+}
+
+/* ================================
+   SCROLLBAR PRO
+================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e5e7eb;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+@keyframes scaleIn {
+  from { transform: scale(.95); opacity: 0 }
+  to { transform: scale(1); opacity: 1 }
+}
+
+.animate-fadeIn {
+  animation: fadeIn .25s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn .25s ease-out;
 }
