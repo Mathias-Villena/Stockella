@@ -201,67 +201,116 @@ export default function Movimientos() {
       </div>
 
       {/* MODAL NUEVO MOVIMIENTO */}
-      <dialog id="dlgMovimiento" className="rounded-2xl p-0">
-        <form
-          onSubmit={handleSubmit(registrarMovimiento)}
-          className="bg-white rounded-2xl p-6 w-[520px]"
+<dialog
+  id="dlgMovimiento"
+  className="rounded-3xl p-0 backdrop:bg-black/40"
+  style={{
+    padding: 0,
+    border: "none",
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    margin: 0,
+    zIndex: 9999,
+  }}
+>
+  <form
+    onSubmit={handleSubmit(registrarMovimiento)}
+    className="bg-white rounded-3xl w-[520px] shadow-2xl p-7 animate-fadeIn"
+  >
+    {/* HEADER */}
+    <div className="flex items-center justify-between mb-6 border-b pb-3">
+      <h3 className="text-2xl font-semibold flex items-center gap-2">
+        <span className="text-blue-600 text-xl">📦</span>
+        Registrar Movimiento
+      </h3>
+
+      <button
+        type="button"
+        onClick={() => document.getElementById("dlgMovimiento").close()}
+        className="text-gray-500 hover:text-gray-700 text-xl"
+      >
+        ✕
+      </button>
+    </div>
+
+    {/* FORMULARIO */}
+    <div className="grid grid-cols-2 gap-4">
+
+      {/* Tipo */}
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-gray-600">Tipo</label>
+        <select
+          className="bg-gray-100 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+          {...register("tipo", { required: true })}
         >
-          <h3 className="text-xl font-semibold mb-4">
-            Registrar nuevo movimiento
-          </h3>
+          <option value="">Selecciona tipo</option>
+          <option value="Entrada">Entrada</option>
+          <option value="Salida">Salida</option>
+        </select>
+      </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <select
-              className="bg-gray-100 px-3 py-2 rounded-lg"
-              {...register("tipo", { required: true })}
-            >
-              <option value="">Selecciona tipo</option>
-              <option value="Entrada">Entrada</option>
-              <option value="Salida">Salida</option>
-            </select>
+      {/* Producto */}
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-gray-600">Producto</label>
+        <select
+          className="bg-gray-100 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+          {...register("id_producto", { required: true })}
+        >
+          <option value="">Selecciona producto</option>
+          {productos.map((p) => (
+            <option key={p.id_producto} value={p.id_producto}>
+              {p.nombre}
+            </option>
+          ))}
+        </select>
+      </div>
 
-            <select
-              className="bg-gray-100 px-3 py-2 rounded-lg"
-              {...register("id_producto", { required: true })}
-            >
-              <option value="">Selecciona producto</option>
-              {productos.map((p) => (
-                <option key={p.id_producto} value={p.id_producto}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
+      {/* Cantidad */}
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-gray-600">Cantidad</label>
+        <input
+          type="number"
+          min="1"
+          className="bg-gray-100 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+          placeholder="Ej: 10"
+          {...register("cantidad", { required: true })}
+        />
+      </div>
 
-            <input
-              type="number"
-              min="1"
-              className="bg-gray-100 px-3 py-2 rounded-lg"
-              placeholder="Cantidad"
-              {...register("cantidad", { required: true })}
-            />
-            <input
-              className="bg-gray-100 px-3 py-2 rounded-lg"
-              placeholder="Motivo (opcional)"
-              {...register("motivo")}
-            />
-          </div>
+      {/* Motivo */}
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-gray-600">Motivo</label>
+        <input
+          className="bg-gray-100 px-4 py-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+          placeholder="Opcional"
+          {...register("motivo")}
+        />
+      </div>
 
-          <div className="flex justify-end gap-2 mt-4">
-            <button
-              type="button"
-              onClick={() =>
-                document.getElementById("dlgMovimiento").close()
-              }
-              className="px-4 py-2 rounded-lg"
-            >
-              Cancelar
-            </button>
-            <button className="bg-[#1B59F8] hover:bg-[#174bd3] text-white px-4 py-2 rounded-lg">
-              Guardar
-            </button>
-          </div>
-        </form>
-      </dialog>
+    </div>
+
+    {/* FOOTER */}
+    <div className="flex justify-end gap-3 mt-8">
+      <button
+        type="button"
+        onClick={() => document.getElementById("dlgMovimiento").close()}
+        className="px-5 py-2.5 rounded-xl bg-gray-200 hover:bg-gray-300 transition"
+      >
+        Cancelar
+      </button>
+
+      <button
+        className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md transition"
+      >
+        Guardar
+      </button>
+    </div>
+  </form>
+</dialog>
+
+
     </div>
   );
 }

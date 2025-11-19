@@ -17,7 +17,7 @@ exports.listar = async (req, res) => {
     const { count, rows } = await Producto.findAndCountAll({
       where,
       include: [
-        { model: Categoria, as:"Categoria", attributes: ['nombre'], required: false },
+        { model: Categoria, as: "Categoria", attributes: ['nombre'], required: false },
         {
           model: ImagenProducto,
           attributes: ['url', 'es_principal'],
@@ -48,9 +48,33 @@ exports.listar = async (req, res) => {
   }
 };
 
+
+/* ============================================================
+   ⚠️ ARREGLADO: VALIDACIÓN Y SANITIZACIÓN DEL BODY
+   ============================================================ */
+function normalizarBodyProducto(body) {
+  return {
+    codigo: body.codigo,
+    nombre: body.nombre,
+    descripcion: body.descripcion || "",
+    precio: Number(body.precio) || 0,
+    stock_actual: Number(body.stock_actual) || 0,
+    stock_minimo: Number(body.stock_minimo) || 0,
+    unidad_medida: body.unidad_medida || "unidad",
+    id_categoria: body.id_categoria ? Number(body.id_categoria) : null
+  };
+}
+
+
 exports.crear = async (req, res) => {
   try {
-    const p = await Producto.create(req.body);
+    const data = normalizarBodyProducto(req.body);
+
+    if (!data.id_categoria) {
+      return res.status(400).json({ error: "La categoría es obligatoria" });
+    }
+
+    const p = await Producto.create(data);
 
     await registrarAccion(
       req.user.id_usuario,
@@ -67,11 +91,14 @@ exports.crear = async (req, res) => {
   }
 };
 
+
 exports.actualizar = async (req, res) => {
   try {
     const { id } = req.params;
 
-    await Producto.update(req.body, { where: { id_producto: id } });
+    const data = normalizarBodyProducto(req.body);
+
+    await Producto.update(data, { where: { id_producto: id } });
 
     const p = await Producto.findByPk(id);
 
@@ -89,6 +116,7 @@ exports.actualizar = async (req, res) => {
     res.status(500).json({ error: "Error actualizando producto" });
   }
 };
+
 
 exports.eliminar = async (req, res) => {
   try {
@@ -110,6 +138,7 @@ exports.eliminar = async (req, res) => {
     res.status(500).json({ error: "Error eliminando producto" });
   }
 };
+
 
 async function evaluarAlerta(prod) {
   try {
