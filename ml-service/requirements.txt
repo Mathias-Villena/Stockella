@@ -1,0 +1,11 @@
+tensorflow
+numpy
+pandas
+matplotlib
+scikit-learn
+pillow
+requests
+python-dotenv
+psycopg2-binary
+fastapi
+uvicorn

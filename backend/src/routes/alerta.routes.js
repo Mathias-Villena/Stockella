@@ -38,7 +38,7 @@ const { listar, marcarAtendida } = require("../controllers/alerta.controller");
  *       200:
  *         description: Lista de alertas obtenida correctamente
  */
-router.get("/", auth, role("Administrador", "Editor", "Visualizador"), listar);
+router.get("/", auth, role("Administrador", "Editor", "Visualizador", "Empleado"), listar);
 
 /**
  * @swagger
@@ -60,6 +60,6 @@ router.get("/", auth, role("Administrador", "Editor", "Visualizador"), listar);
  *       200:
  *         description: Alerta marcada como atendida correctamente
  */
-router.put("/:id/atender", auth, role("Administrador"), marcarAtendida);
+router.put("/:id/atender", auth, role("Administrador", "Editor", "Empleado"), marcarAtendida);
 
 module.exports = router;

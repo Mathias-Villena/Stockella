@@ -133,6 +133,35 @@ router.post("/", auth, role("Administrador", "Editor"), ctrl.crear);
 
 /**
  * @swagger
+ * /productos/codigo/{codigo}:
+ *   get:
+ *     summary: Obtiene un producto por código de barras
+ *     description: Devuelve el producto asociado al código (EAN/UPC). Disponible para Administrador, Editor, Visualizador y Empleado.
+ *     tags: [Productos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: codigo
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Código de barras (EAN/UPC)
+ *     responses:
+ *       200:
+ *         description: Producto encontrado
+ *       404:
+ *         description: Producto no encontrado
+ */
+router.get(
+  "/codigo/:codigo",
+  auth,
+  role("Administrador", "Editor", "Visualizador", "Empleado"),
+  ctrl.obtenerPorCodigo
+);
+
+/**
+ * @swagger
  * /productos/{id}:
  *   put:
  *     summary: Actualiza un producto existente

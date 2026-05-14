@@ -25,6 +25,10 @@ build/
 .env.production
 .env.test
 
+/frontend/.env
+/backend/.env
+/ml-service/.env
+
 # ============================================
 # Logs
 # ============================================
@@ -46,15 +50,66 @@ Thumbs.db
 .idea/
 
 # ============================================
-# Custom: evitar que cada proyecto suba sus node_modules y env
+# Frontend / Backend node_modules
 # ============================================
 /frontend/node_modules/
-/frontend/.env
 /backend/node_modules/
-/backend/.env
-/backend/reportes/
 
-# Archivos temporales
+# ============================================
+# Python / ML
+# ============================================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+/ml-service/venv/
+/ml-service/__pycache__/
+/ml-service/app/__pycache__/
+
+# Dataset pesado ML
+/ml-service/dataset_raw/
+/ml-service/dataset_split/
+/ml-service/dataset-raw/
+
+# Modelos entrenados pesados
+/ml-service/models/*.keras
+/ml-service/models/*.h5
+
+# ============================================
+# Flutter
+# ============================================
+/stockella_mobile/.dart_tool/
+/stockella_mobile/build/
+/stockella_mobile/.flutter-plugins
+/stockella_mobile/.flutter-plugins-dependencies
+/stockella_mobile/.packages
+/stockella_mobile/pubspec.lock
+
+# Android/iOS generated
+/stockella_mobile/android/.gradle/
+/stockella_mobile/android/app/build/
+/stockella_mobile/ios/Pods/
+/stockella_mobile/ios/.symlinks/
+
+# ============================================
+# Backend uploads/reportes/temp
+# ============================================
+/backend/uploads/
+/backend/reportes/
+/backend/temp/
+/backend/logs/
+
+# ============================================
+# Database backups
+# ============================================
+*.backup
+*.dump
+*.sql
+
+# ============================================
+# Temp files
+# ============================================
 *.tmp
 *.temp
-

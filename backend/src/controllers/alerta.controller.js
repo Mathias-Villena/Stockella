@@ -1,5 +1,4 @@
 const { Alerta, Producto } = require("../models");
-const { Op } = require("sequelize");
 const registrarAccion = require("../middlewares/auditoria");
 
 exports.listar = async (req, res) => {
@@ -8,7 +7,7 @@ exports.listar = async (req, res) => {
     const where = {};
 
     if (tipo) where.tipo = tipo;
-    if (atendida !== undefined) where.atendida = atendida === "true";
+    if (atendida !== undefined) where.atendida = String(atendida) === "true";
 
     const alertas = await Alerta.findAll({
       where,
@@ -26,9 +25,14 @@ exports.listar = async (req, res) => {
 exports.marcarAtendida = async (req, res) => {
   try {
     const { id } = req.params;
-    const alerta = await Alerta.findByPk(id);
 
+    const alerta = await Alerta.findByPk(id);
     if (!alerta) return res.status(404).json({ error: "Alerta no encontrada" });
+
+    // ✅ Evita "atender" dos veces
+    if (alerta.atendida) {
+      return res.json({ mensaje: "La alerta ya estaba atendida", alerta });
+    }
 
     await alerta.update({ atendida: true });
 

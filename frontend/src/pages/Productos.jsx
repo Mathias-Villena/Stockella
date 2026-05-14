@@ -44,15 +44,21 @@ export default function Productos() {
   }, []);
 
   // ===============================
-  // Cargar categorías (mock temporal)
+  // Cargar categorías 
   // ===============================
   useEffect(() => {
-    setCategorias([
-      { id: 1, nombre: "Bebidas" },
-      { id: 2, nombre: "Snacks" },
-      { id: 3, nombre: "Limpieza" },
-    ]);
-  }, []);
+  const fetchCategorias = async () => {
+    try {
+      const { data } = await api.get("/categorias");
+      setCategorias(data || []);
+    } catch (error) {
+      console.error("❌ Error cargando categorías:", error);
+      setCategorias([]);
+    }
+  };
+
+  fetchCategorias();
+}, []);
 
   // ===============================
   // Búsqueda con debounce
@@ -298,6 +304,7 @@ export default function Productos() {
       {showModal && (
         <ProductoModal
           producto={editingProduct}
+          categorias={categorias}
           onClose={() => setShowModal(false)}
           onCreated={() => fetchData({ page })}
         />

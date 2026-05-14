@@ -22,8 +22,8 @@ app.use("/api/dataset", require("./routes/datasetml.routes"));
 app.use('/api/auditoria', auditoriaRoutes);
 app.use("/api/reportes", require("./routes/reporte.routes"));
 app.use("/api/configuracion", require("./routes/configuracion.routes"));
-
-
+app.use("/api/ml", require("./routes/ml.routes"));
+app.use("/api/categorias", require("./routes/categoria.routes"));
 // Swagger
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

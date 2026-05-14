@@ -12,21 +12,25 @@ export default function ModalGenerarReporte({ close, refresh }) {
       await api.post("/reportes/generar", {
         tipo,
         formato,
-        periodo
+        periodo,
       });
 
       Swal.fire("Éxito", "Reporte generado correctamente", "success");
       refresh();
       close();
-    } catch  {
-      Swal.fire("Error", "No se pudo generar el reporte", "error");
+    } catch (error) {
+      console.error("❌ Error generando reporte:", error?.response?.data || error);
+      Swal.fire(
+        "Error",
+        error?.response?.data?.error || "No se pudo generar el reporte",
+        "error"
+      );
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm grid place-content-center z-50">
       <div className="bg-white rounded-xl shadow-xl p-8 w-[450px]">
-
         <h2 className="text-xl font-bold mb-4">Generar Nuevo Reporte</h2>
 
         <label className="text-sm font-medium">Tipo de Reporte</label>
@@ -38,9 +42,6 @@ export default function ModalGenerarReporte({ close, refresh }) {
           <option>Inventario General</option>
           <option>Stock Bajo</option>
           <option>Movimientos</option>
-          <option>Auditoría</option>
-          <option>Valoración</option>
-          <option>Por Categorías</option>
         </select>
 
         <label className="text-sm font-medium">Formato</label>
@@ -64,7 +65,6 @@ export default function ModalGenerarReporte({ close, refresh }) {
           <option>Este mes</option>
           <option>Este trimestre</option>
           <option>Este año</option>
-          <option>Personalizado</option>
         </select>
 
         <div className="flex justify-end gap-3">

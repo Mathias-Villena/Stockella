@@ -11,6 +11,7 @@ import DatasetML from "../pages/DatasetML";
 import Auditoria from "../pages/Auditoria";
 import Reportes from "../pages/Reportes";
 import Configuracion from "../pages/Configuracion";
+import Categorias from "../pages/Categorias";
 
 export const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
   { path: "auditoria", element: <Auditoria /> },
   { path: "reportes", element: <Reportes /> },
   { path: "configuracion", element: <Configuracion /> },
+  { path: "categorias", element: <Categorias /> },
 
     ],
   },

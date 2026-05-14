@@ -35,6 +35,7 @@ export default function Sidebar() {
       <nav className="flex flex-col gap-1">
         <Item to="/" label="Dashboard" icon="📊" />
         <Item to="/productos" label="Productos" icon="📦" />
+        <Item to="/categorias" label="Categorías" icon="🏷️" />
         <Item to="/usuarios" label="Usuarios" icon="👥" />
         <Item to="/movimientos" label="Movimientos" icon="💼" />
         <Item to="/alertas" label="Alertas" icon="⚠️" />

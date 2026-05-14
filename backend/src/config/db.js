@@ -1,4 +1,7 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize } = require('sequelize');
+require('dotenv').config();
+
+const isSSL = process.env.DB_SSL === 'true';
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,
@@ -6,15 +9,17 @@ const sequelize = new Sequelize(
   process.env.DB_PASS,
   {
     host: process.env.DB_HOST,
-    dialect: "postgres",
     port: process.env.DB_PORT,
+    dialect: 'postgres',
     logging: false,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
-    },
+    dialectOptions: isSSL
+      ? {
+          ssl: {
+            require: true,
+            rejectUnauthorized: false,
+          },
+        }
+      : {},
   }
 );
 

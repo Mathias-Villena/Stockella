@@ -5,61 +5,86 @@ const {
   Alerta,
   Categoria,
 } = require("../models");
-const { Op, literal, fn, col } = require("sequelize");
+
+const { Op, literal, fn, col, where } = require("sequelize");
 
 exports.resumen = async (_req, res) => {
   try {
     // 1️⃣ Cards principales
-    const [totalProductos, totalUsuarios, totalAlertas, movimientosHoy] =
-      await Promise.all([
-        Producto.count({ where: { estado: true } }),
-        Usuario.count({ where: { estado: true } }),
-        Alerta.count({ where: { atendida: false } }),
-        Movimiento.count({ where: literal(`DATE("fecha") = CURRENT_DATE`) }),
-      ]);
+    const [
+      totalProductos,
+      totalUsuarios,
+      totalAlertas,
+      movimientosHoy,
+      stockBajoProductos,
+      productosAgotados,
+      stockOk,
+    ] = await Promise.all([
+      Producto.count({ where: { estado: true } }),
+      Usuario.count({ where: { estado: true } }),
+      Alerta.count({ where: { atendida: false } }),
+      Movimiento.count({ where: literal(`DATE("fecha") = CURRENT_DATE`) }),
 
-    // 2️⃣ Stock por categoría (gráfico barras)
-const stockPorCategoria = await Producto.findAll({
-  attributes: [
-    [col("Producto.id_categoria"), "id_categoria"],
-    [fn("SUM", col("Producto.stock_actual")), "total"],
-  ],
-  include: [
-    {
-      model: Categoria,
-      as: "Categoria",
-      attributes: ["nombre"],
-    },
-  ],
-  group: [
-    "Producto.id_categoria",
-    "Categoria.id_categoria",
-    "Categoria.nombre",
-  ],
-  order: [[literal("total"), "DESC"]],
-});
+      // Productos con stock actual <= stock mínimo
+      Producto.count({
+        where: {
+          estado: true,
+          stock_actual: { [Op.gt]: 0 },
+          [Op.and]: where(col("stock_actual"), Op.lte, col("stock_minimo")),
+        },
+      }),
 
-const categoriasFormateado = stockPorCategoria.map((c) => ({
-  categoria: c.Categoria?.nombre || "Sin categoría",
-  total: Number(c.dataValues.total) || 0,
-}));
+      // Productos agotados
+      Producto.count({
+        where: {
+          estado: true,
+          stock_actual: 0,
+        },
+      }),
 
-
-
-    // 3️⃣ Estado de alertas (torta)
-    const [stockBajo, agotados, ok] = await Promise.all([
-      Alerta.count({ where: { tipo: "Stock Bajo", atendida: false } }),
-      Producto.count({ where: { stock_actual: 0 } }),
-      Producto.count({ where: { stock_actual: { [Op.gt]: 0 } } }),
+      // Productos saludables
+      Producto.count({
+        where: {
+          estado: true,
+          [Op.and]: where(col("stock_actual"), Op.gt, col("stock_minimo")),
+        },
+      }),
     ]);
 
+    // 2️⃣ Stock por categoría
+    const stockPorCategoria = await Producto.findAll({
+      attributes: [
+        [col("Producto.id_categoria"), "id_categoria"],
+        [fn("SUM", col("Producto.stock_actual")), "total"],
+      ],
+      include: [
+        {
+          model: Categoria,
+          as: "Categoria",
+          attributes: ["nombre"],
+        },
+      ],
+      group: [
+        "Producto.id_categoria",
+        "Categoria.id_categoria",
+        "Categoria.nombre",
+      ],
+      order: [[literal("total"), "DESC"]],
+    });
+
+    const categoriasFormateado = stockPorCategoria.map((c) => ({
+      categoria: c.Categoria?.nombre || "Sin categoría",
+      total: Number(c.dataValues.total) || 0,
+    }));
+
+    // 3️⃣ Estado de alertas / stock
     const estadoAlertas = {
-      stock_bajo: stockBajo,
-      agotados,
-      ok,
+      stock_bajo: stockBajoProductos,
+      agotados: productosAgotados,
+      ok: stockOk,
     };
 
-    // 4️⃣ Movimientos de la semana (líneas)
+    // 4️⃣ Movimientos de la semana
     const movimientosSemana = await Movimiento.findAll({
       attributes: [
         [fn("TO_CHAR", col("fecha"), "Dy"), "dia"],
@@ -95,6 +120,11 @@ const categoriasFormateado = stockPorCategoria.map((c) => ({
         usuarios: totalUsuarios,
         alertas: totalAlertas,
         movimientosHoy,
+
+        // Nuevos para móvil
+        stockBajoProductos,
+        productosAgotados,
+        stockOk,
       },
       stockPorCategoria: categoriasFormateado,
       estadoAlertas,

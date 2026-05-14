@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const { Usuario, Rol } = require('../models');
 const { Op } = require('sequelize');
-
+const registrarAccion = require("../middlewares/auditoria");
 // ==========================
 // LISTAR USUARIOS PAGINADOS
 // ==========================
