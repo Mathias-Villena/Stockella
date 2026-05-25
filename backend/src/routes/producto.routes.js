@@ -9,7 +9,7 @@ const router = require("express").Router();
 const auth = require("../middlewares/auth");
 const role = require("../middlewares/role");
 const ctrl = require("../controllers/producto.controller");
-
+const upload = require("../middlewares/upload");
 /**
  * @swagger
  * /productos:
@@ -130,7 +130,22 @@ router.get("/", auth, role("Administrador", "Editor", "Visualizador", "Empleado"
  *         description: Producto creado correctamente
  */
 router.post("/", auth, role("Administrador", "Editor"), ctrl.crear);
-
+router.post(
+  "/importar",
+  auth,
+  role("Administrador", "Editor"),
+  upload.fields([
+    {
+      name: "file",
+      maxCount: 1,
+    },
+    {
+      name: "imagenes",
+      maxCount: 1,
+    },
+  ]),
+  ctrl.importarProductos
+);
 /**
  * @swagger
  * /productos/codigo/{codigo}:

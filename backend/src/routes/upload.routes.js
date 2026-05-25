@@ -6,6 +6,7 @@ const upload = require("../middlewares/upload");
 const {
   subirImagenProducto,
   subirImagenDataset,
+  subirDatasetZip,
   subirEvidenciaMovil,
 } = require("../controllers/upload.controller");
 
@@ -23,6 +24,13 @@ router.post(
   role("Administrador", "Editor"),
   upload.single("file"),
   subirImagenDataset
+);
+router.post(
+  "/dataset/zip",
+  auth,
+  role("Administrador", "Editor"),
+  upload.single("file"),
+  subirDatasetZip
 );
 
 router.post(

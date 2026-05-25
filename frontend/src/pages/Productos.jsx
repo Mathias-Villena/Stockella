@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import ProductoModal from "../components/ProductoModal";
+import ImportarProductosModal from "../components/ImportarProductosModal";
 import Swal from "sweetalert2";
 
 const debounce = (fn, ms = 400) => {
@@ -27,14 +28,19 @@ export default function Productos() {
 
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [openImport, setOpenImport] = useState(false);
 
-  // ===============================
-  // Cargar productos
-  // ===============================
   const fetchData = async (params = {}) => {
-    const { data } = await api.get("/productos", {
-      params: { page, limit, q, categoria: cat || undefined, ...params },
-    });
+    const finalParams = {
+      page,
+      limit,
+      q,
+      categoria: cat || undefined,
+      ...params,
+    };
+
+    const { data } = await api.get("/productos", { params: finalParams });
+
     setItems(data.data || []);
     setTotalPages(data.paginas || 1);
   };
@@ -43,26 +49,20 @@ export default function Productos() {
     fetchData();
   }, []);
 
-  // ===============================
-  // Cargar categorías 
-  // ===============================
   useEffect(() => {
-  const fetchCategorias = async () => {
-    try {
-      const { data } = await api.get("/categorias");
-      setCategorias(data || []);
-    } catch (error) {
-      console.error("❌ Error cargando categorías:", error);
-      setCategorias([]);
-    }
-  };
+    const fetchCategorias = async () => {
+      try {
+        const { data } = await api.get("/categorias");
+        setCategorias(data || []);
+      } catch (error) {
+        console.error("❌ Error cargando categorías:", error);
+        setCategorias([]);
+      }
+    };
 
-  fetchCategorias();
-}, []);
+    fetchCategorias();
+  }, []);
 
-  // ===============================
-  // Búsqueda con debounce
-  // ===============================
   const onSearch = useMemo(
     () =>
       debounce((v) => {
@@ -70,27 +70,24 @@ export default function Productos() {
         setPage(1);
         fetchData({ page: 1, q: v });
       }),
-    [cat]
+    [cat, page]
   );
 
-  // ===============================
-  // Filtrar por stock (frontend)
-  // ===============================
   const filtered = items.filter((p) => {
     if (stock === "bajo" && !(p.stock_actual <= p.stock_minimo)) return false;
+
     if (
       stock === "medio" &&
       !(p.stock_actual > p.stock_minimo && p.stock_actual - p.stock_minimo < 30)
     )
       return false;
+
     if (stock === "alto" && !(p.stock_actual - p.stock_minimo >= 30))
       return false;
+
     return true;
   });
 
-  // ===============================
-  // Paginación
-  // ===============================
   const prev = () => {
     if (page > 1) {
       const newPage = page - 1;
@@ -107,9 +104,6 @@ export default function Productos() {
     }
   };
 
-  // ===============================
-  // Badges de stock
-  // ===============================
   const badge = (p) => {
     if (p.stock_actual <= p.stock_minimo)
       return (
@@ -117,12 +111,14 @@ export default function Productos() {
           Stock Bajo
         </span>
       );
+
     if (p.stock_actual - p.stock_minimo < 30)
       return (
         <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">
           Stock Medio
         </span>
       );
+
     return (
       <span className="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">
         Stock Alto
@@ -130,9 +126,6 @@ export default function Productos() {
     );
   };
 
-  // ===============================
-  // Crear o editar
-  // ===============================
   const handleNuevo = () => {
     setEditingProduct(null);
     setShowModal(true);
@@ -143,9 +136,6 @@ export default function Productos() {
     setShowModal(true);
   };
 
-  // ===============================
-  // Eliminar producto
-  // ===============================
   const handleEliminarProducto = async (id) => {
     const confirm = await Swal.fire({
       title: "¿Eliminar producto?",
@@ -170,18 +160,36 @@ export default function Productos() {
     }
   };
 
-  // ===============================
-  // Render principal
-  // ===============================
   return (
     <div>
-      <h1 className="text-4xl font-extrabold mb-4">Gestión de Productos</h1>
-      <p className="text-sm text-gray-500 mb-2">
-        Rol actual: <strong>{user?.rol}</strong>
-      </p>
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <h1 className="text-4xl font-extrabold mb-2">Gestión de Productos</h1>
+          <p className="text-sm text-gray-500">
+            Rol actual: <strong>{user?.rol}</strong>
+          </p>
+        </div>
 
-      {/* FILTROS */}
-      <div className="grid md:grid-cols-4 gap-3 mb-4">
+        {hasRole("Administrador", "Editor") && (
+          <div className="flex gap-3">
+            <button
+              onClick={() => setOpenImport(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-semibold shadow"
+            >
+              Importar Excel
+            </button>
+
+            <button
+              onClick={handleNuevo}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl font-semibold shadow"
+            >
+              + Nuevo Producto
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-3 mb-4">
         <input
           className="bg-white px-4 py-3 rounded-xl shadow"
           placeholder="Buscar productos..."
@@ -194,12 +202,13 @@ export default function Productos() {
           onChange={(e) => {
             const value = e.target.value ? Number(e.target.value) : "";
             setCat(value);
-            fetchData({ page: 1, categoria: value });
+            setPage(1);
+            fetchData({ page: 1, categoria: value || undefined });
           }}
         >
           <option value="">Todas las categorías</option>
           {categorias.map((c) => (
-            <option key={c.id} value={c.id}>
+            <option key={c.id_categoria || c.id} value={c.id_categoria || c.id}>
               {c.nombre}
             </option>
           ))}
@@ -215,18 +224,8 @@ export default function Productos() {
           <option value="medio">Stock Medio</option>
           <option value="alto">Stock Alto</option>
         </select>
-
-        {hasRole("Administrador", "Editor") && (
-          <button
-            onClick={handleNuevo}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl"
-          >
-            + Nuevo Producto
-          </button>
-        )}
       </div>
 
-      {/* TARJETAS */}
       <div className="grid md:grid-cols-3 gap-4">
         {filtered.map((p) => (
           <div
@@ -251,6 +250,7 @@ export default function Productos() {
                   ✎
                 </button>
               )}
+
               {hasRole("Administrador") && (
                 <button
                   onClick={() => handleEliminarProducto(p.id_producto)}
@@ -263,15 +263,18 @@ export default function Productos() {
             </div>
 
             <h3 className="font-semibold">{p.nombre}</h3>
+
             <p className="text-sm text-gray-500 mb-2">
               {p.descripcion || "Sin descripción"}
             </p>
+
             <p className="font-semibold text-emerald-600">
               S/ {Number(p.precio).toFixed(2)}
             </p>
+
             <div className="flex justify-between items-center mt-3">
               <span className="text-sm text-gray-500">
-                Stock: {p.stock_actual} unidades
+                Stock: {p.stock_actual} {p.unidad_medida || "unidades"}
               </span>
               {badge(p)}
             </div>
@@ -279,7 +282,6 @@ export default function Productos() {
         ))}
       </div>
 
-      {/* PAGINACIÓN */}
       <div className="flex items-center justify-center gap-3 mt-6">
         <button
           onClick={prev}
@@ -288,9 +290,11 @@ export default function Productos() {
         >
           « Anterior
         </button>
+
         <span className="text-sm text-gray-600">
           Página {page} de {totalPages}
         </span>
+
         <button
           onClick={next}
           disabled={page >= totalPages}
@@ -300,7 +304,6 @@ export default function Productos() {
         </button>
       </div>
 
-      {/* MODAL */}
       {showModal && (
         <ProductoModal
           producto={editingProduct}
@@ -309,6 +312,12 @@ export default function Productos() {
           onCreated={() => fetchData({ page })}
         />
       )}
+
+      <ImportarProductosModal
+        open={openImport}
+        onClose={() => setOpenImport(false)}
+        onImported={() => fetchData({ page: 1 })}
+      />
     </div>
   );
 }

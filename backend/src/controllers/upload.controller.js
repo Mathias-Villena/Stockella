@@ -1,5 +1,6 @@
 const { s3, PutObjectCommand, DeleteObjectCommand, publicUrl } = require("../utils/s3");
 const { v4: uuid } = require("uuid");
+const AdmZip = require("adm-zip");
 const { ImagenProducto, DatasetML, Producto } = require("../models");
 const registrarAccion = require("../middlewares/auditoria");
 
@@ -133,7 +134,112 @@ exports.subirImagenDataset = async (req, res) => {
     return res.status(500).json({ error: "Error al subir imagen al dataset" });
   }
 };
+// ===============================
+// DATASET MASIVO (ZIP)
+// ===============================
+exports.subirDatasetZip = async (req, res) => {
+  try {
+    const { id_producto, etiqueta, fuente } = req.body;
 
+    if (!id_producto) {
+      return res.status(400).json({
+        error: "Producto requerido",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        error: "ZIP requerido",
+      });
+    }
+
+    const producto = await Producto.findByPk(id_producto);
+
+    if (!producto) {
+      return res.status(404).json({
+        error: "Producto no encontrado",
+      });
+    }
+
+    const zip = new AdmZip(req.file.buffer);
+
+    const entries = zip.getEntries();
+
+    let subidas = 0;
+    let errores = [];
+
+    const etiquetaFinal = normalizarEtiqueta(
+      etiqueta || producto.nombre
+    );
+
+    for (const item of entries) {
+      try {
+        if (item.isDirectory) continue;
+
+        const nombre = item.entryName.toLowerCase();
+
+        const valida =
+          nombre.endsWith(".jpg") ||
+          nombre.endsWith(".jpeg") ||
+          nombre.endsWith(".png") ||
+          nombre.endsWith(".webp");
+
+        if (!valida) continue;
+
+        const buffer = item.getData();
+
+        const ext =
+          nombre.split(".").pop() || "jpg";
+
+        const key =
+          `dataset/${id_producto}/${etiquetaFinal}/${uuid()}.${ext}`;
+
+        await s3.send(
+          new PutObjectCommand({
+            Bucket: BUCKET,
+            Key: key,
+            Body: buffer,
+            ContentType: `image/${ext}`,
+          })
+        );
+
+        const url = publicUrl(
+          BUCKET,
+          key
+        );
+
+        await DatasetML.create({
+          id_producto,
+          imagen_url: url,
+          etiqueta: etiquetaFinal,
+          fuente: fuente || "Admin",
+        });
+
+        subidas++;
+      } catch (e) {
+        errores.push(item.entryName);
+      }
+    }
+
+    await registrarAccion(
+      req.user.id_usuario,
+      "CREAR",
+      `Subió ${subidas} imágenes masivas al dataset`
+    );
+
+    return res.json({
+      total: entries.length,
+      subidas,
+      errores,
+    });
+  } catch (e) {
+    console.error(e);
+
+    res.status(500).json({
+      error: "Error importando dataset",
+    });
+  }
+};
 exports.subirEvidenciaMovil = async (req, res) => {
   try {
     const { tipo = "ml" } = req.body;
