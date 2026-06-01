@@ -19,6 +19,17 @@ class TokenStorage {
     await prefs.setString(_roleKey, rol);
   }
 
+  static Future<void> updateUser({
+    required String nombre,
+    required String email,
+    required String rol,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_nameKey, nombre);
+    await prefs.setString(_emailKey, email);
+    await prefs.setString(_roleKey, rol);
+  }
+
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_tokenKey);

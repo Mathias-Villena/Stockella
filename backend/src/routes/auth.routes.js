@@ -1,48 +1,20 @@
-/**
- * @swagger
- * tags:
- *   name: Autenticación
- *   description: Endpoints para iniciar sesión y obtener tokens JWT
- */
+const router = require("express").Router();
 
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: Inicia sesión en el sistema
- *     tags: [Autenticación]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 example: admin@stockella.com
- *               password:
- *                 type: string
- *                 example: admin123
- *     responses:
- *       200:
- *         description: Inicio de sesión exitoso, devuelve token JWT
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                 usuario:
- *                   type: object
- *       400:
- *         description: Credenciales inválidas
- */
-const router = require('express').Router();
-const { login } = require('../controllers/auth.controller');
-router.post('/login', login);
+const auth = require("../middlewares/auth");
+
+const {
+  login,
+  me,
+  actualizarPerfil,
+  cambiarPassword,
+} = require("../controllers/auth.controller");
+
+router.post("/login", login);
+
+router.get("/me", auth, me);
+
+router.put("/perfil", auth, actualizarPerfil);
+
+router.put("/cambiar-password", auth, cambiarPassword);
+
 module.exports = router;

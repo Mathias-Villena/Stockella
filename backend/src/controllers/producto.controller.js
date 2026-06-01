@@ -21,11 +21,45 @@ const BUCKET = process.env.AWS_S3_BUCKET;
 // =========================
 exports.listar = async (req, res) => {
   try {
-    const { q, categoria, page = 1, limit = 9 } = req.query;
+    const { q, categoria, stock, page = 1, limit = 9 } = req.query;
 
     const where = {};
     if (q) where.nombre = { [Op.iLike]: `%${q}%` };
     if (categoria) where.id_categoria = Number(categoria);
+    if (stock === "bajo") {
+  where[Op.and] = [
+    sequelize.where(
+      sequelize.col("Producto.stock_actual"),
+      Op.lte,
+      sequelize.col("Producto.stock_minimo")
+    ),
+  ];
+}
+
+if (stock === "medio") {
+  where[Op.and] = [
+    sequelize.where(
+      sequelize.col("Producto.stock_actual"),
+      Op.gt,
+      sequelize.col("Producto.stock_minimo")
+    ),
+    sequelize.where(
+      sequelize.literal(`"Producto"."stock_actual" - "Producto"."stock_minimo"`),
+      Op.lt,
+      30
+    ),
+  ];
+}
+
+if (stock === "alto") {
+  where[Op.and] = [
+    sequelize.where(
+      sequelize.literal(`"Producto"."stock_actual" - "Producto"."stock_minimo"`),
+      Op.gte,
+      30
+    ),
+  ];
+}
 
     const pageNum = Math.max(parseInt(page) || 1, 1);
     const limitNum = Math.min(Math.max(parseInt(limit) || 9, 1), 100);

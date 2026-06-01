@@ -36,8 +36,13 @@ export default function Productos() {
       limit,
       q,
       categoria: cat || undefined,
+      stock: stock !== "all" ? stock : undefined,
       ...params,
     };
+
+    if (finalParams.stock === "all") {
+      delete finalParams.stock;
+    }
 
     const { data } = await api.get("/productos", { params: finalParams });
 
@@ -68,25 +73,14 @@ export default function Productos() {
       debounce((v) => {
         setQ(v);
         setPage(1);
-        fetchData({ page: 1, q: v });
+        fetchData({
+          page: 1,
+          q: v,
+          stock: stock !== "all" ? stock : undefined,
+        });
       }),
-    [cat, page]
+    [cat, stock]
   );
-
-  const filtered = items.filter((p) => {
-    if (stock === "bajo" && !(p.stock_actual <= p.stock_minimo)) return false;
-
-    if (
-      stock === "medio" &&
-      !(p.stock_actual > p.stock_minimo && p.stock_actual - p.stock_minimo < 30)
-    )
-      return false;
-
-    if (stock === "alto" && !(p.stock_actual - p.stock_minimo >= 30))
-      return false;
-
-    return true;
-  });
 
   const prev = () => {
     if (page > 1) {
@@ -203,7 +197,12 @@ export default function Productos() {
             const value = e.target.value ? Number(e.target.value) : "";
             setCat(value);
             setPage(1);
-            fetchData({ page: 1, categoria: value || undefined });
+
+            fetchData({
+              page: 1,
+              categoria: value || undefined,
+              stock: stock !== "all" ? stock : undefined,
+            });
           }}
         >
           <option value="">Todas las categorías</option>
@@ -217,7 +216,16 @@ export default function Productos() {
         <select
           className="bg-white px-4 py-3 rounded-xl shadow"
           value={stock}
-          onChange={(e) => setStock(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            setStock(value);
+            setPage(1);
+
+            fetchData({
+              page: 1,
+              stock: value !== "all" ? value : undefined,
+            });
+          }}
         >
           <option value="all">Todo el stock</option>
           <option value="bajo">Stock Bajo</option>
@@ -227,7 +235,7 @@ export default function Productos() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        {filtered.map((p) => (
+        {items.map((p) => (
           <div
             key={p.id_producto}
             className="bg-white rounded-2xl shadow p-5 relative"
@@ -280,6 +288,12 @@ export default function Productos() {
             </div>
           </div>
         ))}
+
+        {items.length === 0 && (
+          <div className="col-span-3 bg-white rounded-2xl shadow p-10 text-center text-gray-500">
+            No se encontraron productos con este filtro.
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-center gap-3 mt-6">
@@ -316,7 +330,10 @@ export default function Productos() {
       <ImportarProductosModal
         open={openImport}
         onClose={() => setOpenImport(false)}
-        onImported={() => fetchData({ page: 1 })}
+        onImported={() => {
+          setPage(1);
+          fetchData({ page: 1 });
+        }}
       />
     </div>
   );
