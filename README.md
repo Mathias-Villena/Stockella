@@ -1,5 +1,5 @@
 # 📦 Stockella – Sistema Inteligente de Inventario
-
+# RAMA DE ANGELA
 Stockella es un sistema web diseñado para optimizar la gestión de inventarios en **bodegas y pequeños comercios**, utilizando:
 
 - Lectura de **código de barras**
