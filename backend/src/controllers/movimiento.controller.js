@@ -1,5 +1,5 @@
 // controllers/movimiento.controller.js
-const { Movimiento, Producto, Usuario, Alerta, sequelize } = require("../models");
+const { Movimiento, Producto, Usuario, Alerta, ImagenProducto, sequelize } = require("../models");
 const { Op } = require("sequelize");
 const registrarAccion = require("../middlewares/auditoria");
 
@@ -27,7 +27,18 @@ exports.listar = async (req, res) => {
     const movimientos = await Movimiento.findAll({
       where,
       include: [
-        { model: Producto, attributes: ["nombre", "id_producto", "codigo"] },
+        {
+          model: Producto,
+          attributes: ["nombre", "id_producto", "codigo"],
+          include: [
+            {
+              model: ImagenProducto,
+              attributes: ["url", "es_principal"],
+              where: { es_principal: true },
+              required: false,
+            },
+          ],
+        },
         { model: Usuario, attributes: ["nombre", "email"] },
       ],
       order: [["fecha", "DESC"]],

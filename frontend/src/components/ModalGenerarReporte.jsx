@@ -29,51 +29,62 @@ export default function ModalGenerarReporte({ close, refresh }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm grid place-content-center z-50">
-      <div className="bg-white rounded-xl shadow-xl p-8 w-[450px]">
-        <h2 className="text-xl font-bold mb-4">Generar Nuevo Reporte</h2>
+    <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-2xl p-6 w-[450px] animate-modalUp flex flex-col gap-4">
+        <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Generar Reporte</h2>
 
-        <label className="text-sm font-medium">Tipo de Reporte</label>
-        <select
-          className="border px-4 py-2 rounded-lg w-full mb-4"
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value)}
-        >
-          <option>Inventario General</option>
-          <option>Stock Bajo</option>
-          <option>Movimientos</option>
-        </select>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Tipo de Reporte</label>
+            <select
+              className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-slate-600 cursor-pointer"
+              value={tipo}
+              onChange={(e) => setTipo(e.target.value)}
+            >
+              <option>Inventario General</option>
+              <option>Stock Bajo</option>
+              <option>Movimientos</option>
+            </select>
+          </div>
 
-        <label className="text-sm font-medium">Formato</label>
-        <select
-          className="border px-4 py-2 rounded-lg w-full mb-4"
-          value={formato}
-          onChange={(e) => setFormato(e.target.value)}
-        >
-          <option>PDF</option>
-          <option>Excel</option>
-        </select>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Formato</label>
+            <select
+              className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-slate-600 cursor-pointer"
+              value={formato}
+              onChange={(e) => setFormato(e.target.value)}
+            >
+              <option>PDF</option>
+              <option>Excel</option>
+            </select>
+          </div>
 
-        <label className="text-sm font-medium">Periodo</label>
-        <select
-          className="border px-4 py-2 rounded-lg w-full mb-6"
-          value={periodo}
-          onChange={(e) => setPeriodo(e.target.value)}
-        >
-          <option>Hoy</option>
-          <option>Esta semana</option>
-          <option>Este mes</option>
-          <option>Este trimestre</option>
-          <option>Este año</option>
-        </select>
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Periodo</label>
+            <select
+              className="w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-slate-600 cursor-pointer"
+              value={periodo}
+              onChange={(e) => setPeriodo(e.target.value)}
+            >
+              <option>Hoy</option>
+              <option>Esta semana</option>
+              <option>Este mes</option>
+              <option>Este trimestre</option>
+              <option>Este año</option>
+            </select>
+          </div>
+        </div>
 
-        <div className="flex justify-end gap-3">
-          <button className="px-4 py-2 rounded-lg border" onClick={close}>
+        <div className="flex gap-3 mt-2 pt-4 border-t border-slate-50">
+          <button
+            onClick={close}
+            className="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-600 py-2.5 rounded-xl font-bold text-sm cursor-pointer transition text-center"
+          >
             Cancelar
           </button>
           <button
             onClick={generar}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+            className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-2.5 rounded-xl font-bold text-sm shadow-md shadow-blue-500/10 cursor-pointer transition text-center animate-pulse-once"
           >
             Generar
           </button>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import DashboardLayout from "../ui/DashboardLayout";
+import { Search, FileText, Activity } from "lucide-react";
+import { formatPeru } from "../utils/dateUtils";
 
 const Auditoria = () => {
   const [registros, setRegistros] = useState([]);
@@ -60,119 +62,153 @@ const obtenerUsuarios = async () => {
 
   // COLOR DEL TAG
   const getTagColor = (accion) => {
-    if (accion === "CREAR") return "bg-green-100 text-green-700";
-    if (accion === "ACTUALIZAR") return "bg-blue-100 text-blue-700";
-    if (accion === "CONFIGURACION") return "bg-purple-100 text-purple-700";
-    return "bg-gray-100 text-gray-600";
+    if (accion === "CREAR") return "bg-green-100 text-green-700 border-green-200";
+    if (accion === "ACTUALIZAR") return "bg-blue-100 text-blue-700 border-blue-200";
+    if (accion === "CONFIGURACION") return "bg-purple-100 text-purple-700 border-purple-200";
+    return "bg-gray-100 text-gray-600 border-gray-200";
   };
 
   return (
+    <div className="space-y-6">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Auditoría</h1>
+          <p className="text-sm text-slate-500 mt-1">Registro completo e inmutable de acciones en el sistema</p>
+        </div>
+      </div>
 
-      <div className="px-6 py-4">
-
-        {/* ==== TÍTULO ==== */}
-        <h1 className="text-3xl font-bold mb-2">Auditoría</h1>
-        <p className="text-gray-500 mb-6">Registro completo de acciones en el sistema</p>
-
-        {/* ==== CARDS DE MÉTRICAS ==== */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-
-          <div className="p-4 bg-white rounded-xl shadow-sm border">
-            <p className="text-sm text-gray-500">Total Registros</p>
-            <p className="text-2xl font-bold">{resumen.total}</p>
+      {/* CARDS DE MÉTRICAS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-[0_8px_20px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-slate-500">Total Registros</p>
+            <h2 className="text-2xl font-extrabold text-slate-800 mt-1">{resumen.total}</h2>
           </div>
-
-          <div className="p-4 bg-white rounded-xl shadow-sm border">
-            <p className="text-sm text-gray-500">Creaciones</p>
-            <p className="text-2xl font-bold text-green-600">{resumen.creaciones}</p>
+          <div className="h-10 w-10 rounded-xl bg-blue-50 text-[#1B59F8] flex items-center justify-center border border-blue-100">
+            <FileText size={18} />
           </div>
-
-          <div className="p-4 bg-white rounded-xl shadow-sm border">
-            <p className="text-sm text-gray-500">Actualizaciones</p>
-            <p className="text-2xl font-bold text-blue-600">{resumen.actualizaciones}</p>
-          </div>
-
-          <div className="p-4 bg-white rounded-xl shadow-sm border">
-            <p className="text-sm text-gray-500">Configuraciones</p>
-            <p className="text-2xl font-bold text-purple-600">{resumen.configuraciones}</p>
-          </div>
-
         </div>
 
-        {/* ==== FILTROS ==== */}
-        <div className="flex flex-col md:flex-row gap-3 mb-5">
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-[0_8px_20px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-slate-500">Creaciones</p>
+            <h2 className="text-2xl font-extrabold text-emerald-600 mt-1">{resumen.creaciones}</h2>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+            <Activity size={18} />
+          </div>
+        </div>
 
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-[0_8px_20px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-slate-500">Actualizaciones</p>
+            <h2 className="text-2xl font-extrabold text-blue-600 mt-1">{resumen.actualizaciones}</h2>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+            <Activity size={18} />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-[0_8px_20px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-slate-500">Configuraciones</p>
+            <h2 className="text-2xl font-extrabold text-purple-600 mt-1">{resumen.configuraciones}</h2>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100">
+            <Activity size={18} />
+          </div>
+        </div>
+      </div>
+
+      {/* FILTROS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="relative w-full">
+          <Search size={16} className="absolute left-3.5 top-3 text-slate-400" />
           <input
             type="text"
             placeholder="Buscar en registros..."
-            className="border rounded-lg px-4 py-2 flex-1"
+            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-700 placeholder-slate-400"
             onChange={(e) => setSearch(e.target.value)}
           />
-
-          <select
-            className="border rounded-lg px-4 py-2"
-            value={filtroUsuario}
-            onChange={(e) => setFiltroUsuario(e.target.value)}
-          >
-            <option value="">Todos los usuarios</option>
-            {Array.isArray(usuarios) &&
-  usuarios.map((u) => (
-    <option key={u.id_usuario} value={u.id_usuario}>
-      {u.nombre}
-    </option>
-  ))}
-
-          </select>
-
-          <select
-            className="border rounded-lg px-4 py-2"
-            value={filtroAccion}
-            onChange={(e) => setFiltroAccion(e.target.value)}
-          >
-            <option value="">Todas las acciones</option>
-            <option value="CREAR">Creaciones</option>
-            <option value="ACTUALIZAR">Actualizaciones</option>
-            <option value="CONFIGURACION">Configuraciones</option>
-          </select>
-
         </div>
 
-        {/* ==== TABLA ==== */}
-        <div className="bg-white rounded-xl shadow-sm border overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50">
+        <select
+          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-600 cursor-pointer"
+          value={filtroUsuario}
+          onChange={(e) => setFiltroUsuario(e.target.value)}
+        >
+          <option value="">Todos los usuarios</option>
+          {Array.isArray(usuarios) &&
+            usuarios.map((u) => (
+              <option key={u.id_usuario} value={u.id_usuario}>
+                {u.nombre}
+              </option>
+            ))}
+        </select>
+
+        <select
+          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-600 cursor-pointer"
+          value={filtroAccion}
+          onChange={(e) => setFiltroAccion(e.target.value)}
+        >
+          <option value="">Todas las acciones</option>
+          <option value="CREAR">Creaciones</option>
+          <option value="ACTUALIZAR">Actualizaciones</option>
+          <option value="CONFIGURACION">Configuraciones</option>
+        </select>
+      </div>
+
+      {/* TABLA */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_20px_rgba(0,0,0,0.02)] overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead className="bg-slate-50/75 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
               <tr>
-                <th className="p-4">Usuario</th>
-                <th className="p-4">Acción</th>
-                <th className="p-4">Detalle</th>
-                <th className="p-4">Fecha</th>
-                <th className="p-4">Tipo</th>
+                <th className="text-left px-6 py-4">Usuario</th>
+                <th className="text-left px-6 py-4">Acción</th>
+                <th className="text-left px-6 py-4">Detalle</th>
+                <th className="text-left px-6 py-4">Fecha</th>
+                <th className="text-center px-6 py-4 w-32">Tipo</th>
               </tr>
             </thead>
-            <tbody>
-
-              {Array.isArray(registros) &&
-  registros.map((r) => (
-    <tr key={r.id_auditoria} className="border-t">
-      <td className="p-4">{r.Usuario?.nombre || "Sin nombre"}</td>
-      <td className="p-4">{r.accion}</td>
-      <td className="p-4 text-gray-600">{r.detalle}</td>
-      <td className="p-4">{new Date(r.fecha).toLocaleString()}</td>
-      <td className="p-4">
-        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getTagColor(r.accion)}`}>
-          {r.accion}
-        </span>
-      </td>
-    </tr>
-  ))}
-
-
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {Array.isArray(registros) && registros.length > 0 ? (
+                registros.map((r) => (
+                  <tr key={r.id_auditoria} className="hover:bg-blue-50/15 transition duration-150">
+                    <td className="px-6 py-4 font-bold text-slate-800">
+                      {r.Usuario?.nombre || "Sin nombre"}
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-slate-700">
+                      {r.accion}
+                    </td>
+                    <td className="px-6 py-4 text-slate-500 leading-relaxed max-w-xl truncate">
+                      {r.detalle}
+                    </td>
+                    <td className="px-6 py-4 text-slate-500 whitespace-nowrap">
+                      {formatPeru(r.fecha)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wide whitespace-nowrap ${getTagColor(r.accion)}`}>
+                          {r.accion}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center py-12 text-slate-400 font-semibold bg-slate-50/20">
+                    No hay registros de auditoría disponibles.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
-
       </div>
-
+    </div>
   );
 };
 

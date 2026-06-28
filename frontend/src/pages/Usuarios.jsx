@@ -69,154 +69,151 @@ export default function Usuarios() {
   };
 
   return (
-    <div className="p-8">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-800">Usuarios</h1>
-          <p className="text-gray-500 mt-1">
-            Gestión de usuarios y roles del sistema
-          </p>
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Usuarios</h1>
+          <p className="text-sm text-slate-500 mt-1">Gestión de usuarios, accesos y roles del sistema</p>
         </div>
 
         <button
           onClick={() => setOpenCrear(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl flex items-center gap-2 shadow"
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md shadow-blue-500/10 cursor-pointer transition text-sm w-full md:w-auto justify-center"
         >
           <Plus size={18} />
           Nuevo Usuario
         </button>
       </div>
 
-      {/* Buscador */}
-      <div className="flex gap-3 mb-6">
-        <div className="relative w-full max-w-xl">
-          <Search
-            size={18}
-            className="absolute left-3 top-3 text-gray-400"
-          />
+      {/* BUSCADOR */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative w-full sm:w-[420px]">
+          <Search size={16} className="absolute left-3.5 top-3 text-slate-400" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && buscar()}
             placeholder="Buscar por nombre o correo..."
-            className="w-full border rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-700 placeholder-slate-400"
           />
         </div>
 
         <button
           onClick={buscar}
-          className="bg-gray-900 text-white px-6 py-3 rounded-xl"
+          className="bg-slate-900 hover:bg-slate-950 text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition shadow-sm cursor-pointer w-full sm:w-auto text-center"
         >
           Buscar
         </button>
       </div>
 
-      {/* Tabla */}
-      <div className="bg-white rounded-2xl shadow border overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="text-left p-4">Nombre</th>
-              <th className="text-left p-4">Email</th>
-              <th className="text-left p-4">Rol</th>
-              <th className="text-left p-4">Estado</th>
-              <th className="text-center p-4">Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {loading ? (
+      {/* TABLA */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_20px_rgba(0,0,0,0.02)] overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead className="bg-slate-50/75 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
               <tr>
-                <td colSpan="5" className="text-center p-6 text-gray-500">
-                  Cargando usuarios...
-                </td>
+                <th className="text-left px-6 py-4">Nombre</th>
+                <th className="text-left px-6 py-4">Email</th>
+                <th className="text-left px-6 py-4 w-40">Rol</th>
+                <th className="text-left px-6 py-4 w-32">Estado</th>
+                <th className="text-center px-6 py-4 w-32">Acciones</th>
               </tr>
-            ) : usuarios.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="text-center p-6 text-gray-500">
-                  No hay usuarios registrados
-                </td>
-              </tr>
-            ) : (
-              usuarios.map((u) => (
-                <tr key={u.id_usuario} className="border-b hover:bg-gray-50">
-                  <td className="p-4 font-semibold text-gray-800">
-                    {u.nombre}
-                  </td>
+            </thead>
 
-                  <td className="p-4 text-gray-600">{u.email}</td>
-
-                  <td className="p-4">
-                    <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm">
-                      {u.Rol?.nombre || "Sin rol"}
-                    </span>
-                  </td>
-
-                  <td className="p-4">
-                    {u.estado ? (
-                      <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm">
-                        Activo
-                      </span>
-                    ) : (
-                      <span className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm">
-                        Inactivo
-                      </span>
-                    )}
-                  </td>
-
-                  <td className="p-4">
-                    <div className="flex justify-center gap-3">
-                      <button
-                        onClick={() =>
-                          setUserSelected({
-                            nombre: u.nombre,
-                            email: u.email,
-                            rol: u.Rol?.nombre,
-                          })
-                        }
-                        className="text-blue-600 hover:text-blue-800"
-                        title="Ver perfil"
-                      >
-                        <Eye size={18} />
-                      </button>
-
-                      <button
-                        onClick={() => eliminarUsuario(u.id_usuario)}
-                        className="text-red-600 hover:text-red-800"
-                        title="Eliminar usuario"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="text-center py-12 text-slate-400 font-semibold bg-slate-50/20">
+                    Cargando usuarios...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : usuarios.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-center py-12 text-slate-400 font-semibold bg-slate-50/20">
+                    No hay usuarios registrados.
+                  </td>
+                </tr>
+              ) : (
+                usuarios.map((u) => (
+                  <tr key={u.id_usuario} className="hover:bg-blue-50/15 transition duration-150">
+                    <td className="px-6 py-4 font-bold text-slate-800">
+                      {u.nombre}
+                    </td>
+
+                    <td className="px-6 py-4 text-slate-500 whitespace-nowrap">{u.email}</td>
+
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-block text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                        {u.Rol?.nombre || "Sin rol"}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {u.estado ? (
+                        <span className="inline-block text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                          Activo
+                        </span>
+                      ) : (
+                        <span className="inline-block text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-100 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                          Inactivo
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() =>
+                            setUserSelected({
+                              nombre: u.nombre,
+                              email: u.email,
+                              rol: u.Rol?.nombre,
+                            })
+                          }
+                          className="h-8 w-8 rounded-lg bg-blue-50 text-[#1B59F8] hover:bg-blue-100 flex items-center justify-center transition cursor-pointer"
+                          title="Ver perfil"
+                        >
+                          <Eye size={15} />
+                        </button>
+
+                        <button
+                          onClick={() => eliminarUsuario(u.id_usuario)}
+                          className="h-8 w-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition cursor-pointer"
+                          title="Eliminar usuario"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* Paginación */}
-      <div className="flex justify-center items-center gap-4 mt-6">
+      {/* PAGINACIÓN */}
+      <div className="flex items-center justify-center gap-4 mt-8">
         <button
           disabled={page <= 1}
           onClick={() => setPage(page - 1)}
-          className="px-4 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
+          className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl bg-white hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-xs font-bold shadow-sm transition cursor-pointer"
         >
-          Anterior
+          « Anterior
         </button>
 
-        <span className="text-gray-600">
+        <span className="text-xs font-semibold text-slate-500">
           Página {page} de {paginas}
         </span>
 
         <button
           disabled={page >= paginas}
           onClick={() => setPage(page + 1)}
-          className="px-4 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
+          className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl bg-white hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-xs font-bold shadow-sm transition cursor-pointer"
         >
-          Siguiente
+          Siguiente »
         </button>
       </div>
 

@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import api from "../services/api";
 import Swal from "sweetalert2";
 import { useAuth } from "../context/AuthContext";
+import { ArrowUpDown, Filter, Plus, Calendar, Search } from "lucide-react";
+import { formatPeru } from "../utils/dateUtils";
 
 export default function Movimientos() {
   const [movimientos, setMovimientos] = useState([]);
@@ -100,16 +102,31 @@ export default function Movimientos() {
     user?.rol === "Empleado";
 
   return (
-    <div>
-      <h1 className="text-4xl font-extrabold mb-4">Movimientos</h1>
-      <p className="text-gray-500 mb-6">
-        Registro y control de entradas y salidas del inventario
-      </p>
+    <div className="space-y-6">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Movimientos</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Registro y control de entradas y salidas del inventario
+          </p>
+        </div>
+
+        {puedeCrear && (
+          <button
+            onClick={() => document.getElementById("dlgMovimiento").showModal()}
+            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md shadow-blue-500/10 cursor-pointer transition text-sm w-full md:w-auto justify-center"
+          >
+            <Plus size={18} />
+            Nuevo Movimiento
+          </button>
+        )}
+      </div>
 
       {/* FILTROS */}
-      <div className="grid md:grid-cols-5 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
         <select
-          className="bg-white px-4 py-3 rounded-xl shadow"
+          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-600 cursor-pointer w-full"
           value={tipo}
           onChange={(e) => setTipo(e.target.value)}
         >
@@ -119,7 +136,7 @@ export default function Movimientos() {
         </select>
 
         <select
-          className="bg-white px-4 py-3 rounded-xl shadow"
+          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-600 cursor-pointer w-full"
           value={producto}
           onChange={(e) => setProducto(e.target.value)}
         >
@@ -131,84 +148,91 @@ export default function Movimientos() {
           ))}
         </select>
 
-        <input
-          type="date"
-          className="bg-white px-4 py-3 rounded-xl shadow"
-          value={fechaInicio}
-          onChange={(e) => setFechaInicio(e.target.value)}
-        />
+        <div className="relative w-full">
+          <Calendar size={15} className="absolute left-3.5 top-3 text-slate-400" />
+          <input
+            type="date"
+            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-600"
+            value={fechaInicio}
+            onChange={(e) => setFechaInicio(e.target.value)}
+          />
+        </div>
 
-        <input
-          type="date"
-          className="bg-white px-4 py-3 rounded-xl shadow"
-          value={fechaFin}
-          onChange={(e) => setFechaFin(e.target.value)}
-        />
+        <div className="relative w-full">
+          <Calendar size={15} className="absolute left-3.5 top-3 text-slate-400" />
+          <input
+            type="date"
+            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-600"
+            value={fechaFin}
+            onChange={(e) => setFechaFin(e.target.value)}
+          />
+        </div>
 
         <button
           onClick={aplicarFiltros}
-          className="bg-[#1B59F8] hover:bg-[#174bd3] text-white rounded-xl"
+          className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-950 text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition shadow-sm cursor-pointer w-full"
         >
+          <Filter size={16} />
           Filtrar
         </button>
       </div>
 
-      {/* BOTÓN NUEVO (solo roles permitidos) */}
-      {puedeCrear && (
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => document.getElementById("dlgMovimiento").showModal()}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl px-5 py-3"
-          >
-            + Nuevo Movimiento
-          </button>
-        </div>
-      )}
-
       {/* TABLA */}
-      <div className="bg-white rounded-2xl shadow overflow-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-3">Fecha</th>
-              <th className="p-3">Producto</th>
-              <th className="p-3">Tipo</th>
-              <th className="p-3">Cantidad</th>
-              <th className="p-3">Motivo</th>
-              <th className="p-3">Usuario</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.isArray(movimientos) && movimientos.length > 0 ? (
-              movimientos.map((m) => (
-                <tr key={m.id_movimiento} className="border-t">
-                  <td className="p-3">
-                    {new Date(m.fecha).toLocaleString("es-PE")}
-                  </td>
-                  <td className="p-3">{m.Producto?.nombre || "—"}</td>
-                  <td
-                    className={`p-3 font-semibold ${
-                      m.tipo === "Entrada" ? "text-emerald-600" : "text-red-500"
-                    }`}
-                  >
-                    {m.tipo}
-                  </td>
-                  <td className="p-3">{m.cantidad}</td>
-                  <td className="p-3">{m.motivo || "—"}</td>
-                  <td className="p-3 text-gray-500">
-                    {m.Usuario?.nombre || "—"}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_20px_rgba(0,0,0,0.02)] overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead className="bg-slate-50/75 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+              <tr>
+                <th className="text-left px-6 py-4">Fecha</th>
+                <th className="text-left px-6 py-4">Producto</th>
+                <th className="text-left px-6 py-4 w-32">Tipo</th>
+                <th className="text-left px-6 py-4 w-32">Cantidad</th>
+                <th className="text-left px-6 py-4">Motivo</th>
+                <th className="text-left px-6 py-4">Operario</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {Array.isArray(movimientos) && movimientos.length > 0 ? (
+                movimientos.map((m) => (
+                  <tr key={m.id_movimiento} className="hover:bg-blue-50/15 transition duration-150">
+                    <td className="px-6 py-4 font-medium text-slate-500 whitespace-nowrap">
+                      {formatPeru(m.fecha)}
+                    </td>
+                    <td className="px-6 py-4 font-bold text-slate-800">
+                      {m.Producto?.nombre || "—"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {m.tipo === "Entrada" ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                          ↑ Entrada
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-100 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                          ↓ Salida
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 font-bold text-slate-700">
+                      {m.cantidad} uds.
+                    </td>
+                    <td className="px-6 py-4 text-slate-500 max-w-sm truncate leading-relaxed">
+                      {m.motivo || "—"}
+                    </td>
+                    <td className="px-6 py-4 text-slate-600 font-medium whitespace-nowrap">
+                      {m.Usuario?.nombre || "—"}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="text-center py-12 text-slate-400 font-semibold bg-slate-50/20">
+                    No hay movimientos registrados.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" className="text-center p-6 text-gray-500">
-                  No hay movimientos registrados
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* MODAL NUEVO MOVIMIENTO */}

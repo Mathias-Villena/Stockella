@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import ProductoModal from "../components/ProductoModal";
 import ImportarProductosModal from "../components/ImportarProductosModal";
 import Swal from "sweetalert2";
+import { Search, Plus, Upload, Pencil, Trash2, Package } from "lucide-react";
+import { playClick } from "../utils/sound";
 
 const debounce = (fn, ms = 400) => {
   let t;
@@ -155,45 +157,64 @@ export default function Productos() {
   };
 
   return (
-    <div>
-      <div className="flex items-start justify-between gap-4 mb-4">
+    <div className="space-y-6">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-extrabold mb-2">Gestión de Productos</h1>
-          <p className="text-sm text-gray-500">
-            Rol actual: <strong>{user?.rol}</strong>
-          </p>
+          <h1 className="text-3xl font-black text-slate-800 tracking-tight">
+            Gestión de <span className="premium-gradient-text">Productos</span>
+          </h1>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="text-xs font-semibold text-slate-400">Rol de usuario:</span>
+            <span className="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-100 uppercase tracking-wide">
+              {user?.rol}
+            </span>
+          </div>
         </div>
 
         {hasRole("Administrador", "Editor") && (
-          <div className="flex gap-3">
+          <div className="flex gap-3 w-full md:w-auto">
             <button
-              onClick={() => setOpenImport(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-semibold shadow"
+              onClick={() => {
+                playClick();
+                setOpenImport(true);
+              }}
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-xl font-semibold shadow-sm cursor-pointer transition text-sm active:scale-95 duration-150"
             >
+              <Upload size={16} />
               Importar Excel
             </button>
 
             <button
-              onClick={handleNuevo}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl font-semibold shadow"
+              onClick={() => {
+                playClick();
+                handleNuevo();
+              }}
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md shadow-blue-500/10 cursor-pointer transition text-sm active:scale-95 duration-150"
             >
-              + Nuevo Producto
+              <Plus size={18} />
+              Nuevo Producto
             </button>
           </div>
         )}
       </div>
 
-      <div className="grid md:grid-cols-3 gap-3 mb-4">
-        <input
-          className="bg-white px-4 py-3 rounded-xl shadow"
-          placeholder="Buscar productos..."
-          onChange={(e) => onSearch(e.target.value)}
-        />
+      {/* FILTROS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fadeIn">
+        <div className="relative">
+          <Search size={16} className="absolute left-3.5 top-3 text-slate-400" />
+          <input
+            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-700 placeholder-slate-400"
+            placeholder="Buscar productos por nombre..."
+            onChange={(e) => onSearch(e.target.value)}
+          />
+        </div>
 
         <select
-          className="bg-white px-4 py-3 rounded-xl shadow"
+          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-600 cursor-pointer"
           value={cat}
           onChange={(e) => {
+            playClick();
             const value = e.target.value ? Number(e.target.value) : "";
             setCat(value);
             setPage(1);
@@ -214,9 +235,10 @@ export default function Productos() {
         </select>
 
         <select
-          className="bg-white px-4 py-3 rounded-xl shadow"
+          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-600 cursor-pointer"
           value={stock}
           onChange={(e) => {
+            playClick();
             const value = e.target.value;
             setStock(value);
             setPage(1);
@@ -234,85 +256,135 @@ export default function Productos() {
         </select>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-4">
-        {items.map((p) => (
-          <div
-            key={p.id_producto}
-            className="bg-white rounded-2xl shadow p-5 relative"
-          >
-            {p.imagen_principal && (
-              <img
-                src={p.imagen_principal}
-                alt={p.nombre}
-                className="w-full h-40 object-cover rounded-xl mb-3"
-              />
-            )}
+      {/* REJILLA DE TARJETAS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {items.map((p) => {
+          // Dynamic glow class by stock level
+          let glowClass = "glow-blue";
+          if (Number(p.stock_actual) <= Number(p.stock_minimo)) {
+            glowClass = "glow-rose";
+          } else if (Number(p.stock_actual) <= Number(p.stock_minimo) * 1.5) {
+            glowClass = "glow-amber";
+          } else if (Number(p.stock_actual) > Number(p.stock_minimo) * 1.5) {
+            glowClass = "glow-emerald";
+          }
 
-            <div className="absolute top-3 right-3 flex gap-2">
-              {hasRole("Administrador", "Editor") && (
-                <button
-                  onClick={() => handleEditarProducto(p)}
-                  className="text-gray-400 hover:text-gray-600"
-                  title="Editar producto"
-                >
-                  ✎
-                </button>
-              )}
+          return (
+            <div
+              key={p.id_producto}
+              className={`bg-white rounded-2xl p-5 relative flex flex-col justify-between border-y border-r border-slate-100/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden group ${glowClass}`}
+            >
+              <div>
+                {/* IMAGEN DE PRODUCTO */}
+                <div className="w-full h-44 rounded-xl overflow-hidden mb-4 bg-slate-50 border border-slate-100 flex items-center justify-center relative shadow-sm">
+                  {p.imagen_principal ? (
+                    <img
+                      src={p.imagen_principal}
+                      alt={p.nombre}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "https://placehold.co/400x300/f8fafc/cbd5e1?text=No+Disponible";
+                      }}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-slate-300">
+                      <Package size={40} className="stroke-[1.5]" />
+                      <span className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Sin Imagen</span>
+                    </div>
+                  )}
+                  
+                  {/* BOTONES ACCION FLOTANTES */}
+                  <div className="absolute top-2.5 right-2.5 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {hasRole("Administrador", "Editor") && (
+                      <button
+                        onClick={() => {
+                          playClick();
+                          handleEditarProducto(p);
+                        }}
+                        className="h-8.5 w-8.5 rounded-lg bg-white/95 backdrop-blur shadow border border-slate-100 flex items-center justify-center text-slate-600 hover:text-blue-600 hover:border-blue-200 transition cursor-pointer active:scale-90"
+                        title="Editar producto"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    )}
 
-              {hasRole("Administrador") && (
-                <button
-                  onClick={() => handleEliminarProducto(p.id_producto)}
-                  className="text-red-500 hover:text-red-700"
-                  title="Eliminar producto"
-                >
-                  🗑️
-                </button>
-              )}
+                    {hasRole("Administrador") && (
+                      <button
+                        onClick={() => {
+                          playClick();
+                          handleEliminarProducto(p.id_producto);
+                        }}
+                        className="h-8.5 w-8.5 rounded-lg bg-white/95 backdrop-blur shadow border border-slate-100 flex items-center justify-center text-rose-500 hover:bg-rose-50 hover:border-rose-200 transition cursor-pointer active:scale-90"
+                        title="Eliminar producto"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+              {/* DETALLES */}
+              <h3 className="font-bold text-slate-800 text-base leading-snug">{p.nombre}</h3>
+              <p className="text-xs text-slate-400 mt-1 line-clamp-2 min-h-[32px] leading-relaxed">
+                {p.descripcion || "Sin descripción disponible"}
+              </p>
             </div>
 
-            <h3 className="font-semibold">{p.nombre}</h3>
-
-            <p className="text-sm text-gray-500 mb-2">
-              {p.descripcion || "Sin descripción"}
-            </p>
-
-            <p className="font-semibold text-emerald-600">
-              S/ {Number(p.precio).toFixed(2)}
-            </p>
-
-            <div className="flex justify-between items-center mt-3">
-              <span className="text-sm text-gray-500">
-                Stock: {p.stock_actual} {p.unidad_medida || "unidades"}
-              </span>
-              {badge(p)}
+            <div className="mt-4 pt-3.5 border-t border-slate-50 flex items-end justify-between">
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Precio</p>
+                <p className="font-extrabold text-blue-600 text-lg mt-0.5">
+                  S/ {Number(p.precio).toFixed(2)}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stock actual</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs font-bold text-slate-700">
+                    {p.stock_actual} {p.unidad_medida || "unid."}
+                  </span>
+                  {badge(p)}
+                </div>
+              </div>
             </div>
           </div>
-        ))}
+        );
+      })}
 
         {items.length === 0 && (
-          <div className="col-span-3 bg-white rounded-2xl shadow p-10 text-center text-gray-500">
-            No se encontraron productos con este filtro.
+          <div className="col-span-full bg-white rounded-2xl border border-dashed border-slate-200 p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-2 shadow-sm">
+            <Package size={48} className="text-slate-300 stroke-[1.25]" />
+            <p className="font-semibold text-sm">No se encontraron productos</p>
+            <p className="text-xs text-slate-400">Intenta cambiar los filtros de búsqueda</p>
           </div>
         )}
       </div>
 
-      <div className="flex items-center justify-center gap-3 mt-6">
+      {/* PAGINACIÓN */}
+      <div className="flex items-center justify-center gap-4 mt-8">
         <button
-          onClick={prev}
+          onClick={() => {
+            playClick();
+            prev();
+          }}
           disabled={page <= 1}
-          className="px-4 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
+          className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl bg-white hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-xs font-bold shadow-sm transition cursor-pointer active:scale-95 duration-100"
         >
           « Anterior
         </button>
 
-        <span className="text-sm text-gray-600">
+        <span className="text-xs font-semibold text-slate-500">
           Página {page} de {totalPages}
         </span>
 
         <button
-          onClick={next}
+          onClick={() => {
+            playClick();
+            next();
+          }}
           disabled={page >= totalPages}
-          className="px-4 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
+          className="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl bg-white hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white text-xs font-bold shadow-sm transition cursor-pointer active:scale-95 duration-100"
         >
           Siguiente »
         </button>

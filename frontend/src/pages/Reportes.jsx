@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import DashboardLayout from "../ui/DashboardLayout";
 import api from "../services/api";
 import ModalGenerarReporte from "../components/ModalGenerarReporte";
-import { Download } from "lucide-react";
+import { Download, FileBarChart2, Filter, Plus, Calendar } from "lucide-react";
+import { formatPeru } from "../utils/dateUtils";
 
 export default function Reportes() {
   const [reportes, setReportes] = useState([]);
@@ -59,123 +60,154 @@ export default function Reportes() {
   }, [filtroTipo, filtroFormato, filtroFecha]);
 
   return (
+    <div className="space-y-6">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Reportes</h1>
+          <p className="text-sm text-slate-500 mt-1">Genera y descarga reportes de inventario y movimientos</p>
+        </div>
 
-      <div className="p-6">
+        <button
+          onClick={() => setModal(true)}
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md shadow-blue-500/10 cursor-pointer transition text-sm w-full md:w-auto justify-center"
+        >
+          <Plus size={18} />
+          Generar Reporte
+        </button>
+      </div>
 
-        {/* TÍTULO */}
-        <div className="flex justify-between items-center mb-6">
+      {/* CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-[0_8px_20px_rgba(0,0,0,0.02)] flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Reportes</h1>
-            <p className="text-gray-500">Genera y descarga reportes del sistema</p>
+            <p className="text-sm font-semibold text-slate-500">Total Reportes</p>
+            <h2 className="text-3xl font-extrabold text-slate-800 mt-1">{stats.total}</h2>
           </div>
-
-          <button
-            onClick={() => setModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg shadow"
-          >
-            + Generar Reporte
-          </button>
+          <div className="h-10 w-10 rounded-xl bg-blue-50 text-[#1B59F8] flex items-center justify-center border border-blue-100">
+            <FileBarChart2 size={18} />
+          </div>
         </div>
 
-        {/* CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-7">
-          <div className="bg-white shadow border p-5 rounded-xl">
-            <p className="text-gray-500">Total Reportes</p>
-            <p className="text-3xl font-bold">{stats.total}</p>
-          </div>
-
-          <div className="bg-white shadow border p-5 rounded-xl">
-            <p className="text-gray-500">Último Creado</p>
-            <p className="font-semibold">
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-[0_8px_20px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-slate-500">Último Creado</p>
+            <h4 className="font-bold text-slate-800 truncate mt-1">
               {stats.ultimo ? stats.ultimo.tipo : "—"}
-            </p>
-            <p className="text-sm text-gray-400">
-              {stats.ultimo ? new Date(stats.ultimo.fecha_generacion).toLocaleString() : ""}
+            </h4>
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              {stats.ultimo ? formatPeru(stats.ultimo.fecha_generacion) : "Sin registros"}
             </p>
           </div>
-
-          <div className="bg-white shadow border p-5 rounded-xl">
-            <p className="text-gray-500">Este Mes</p>
-            <p className="text-3xl font-bold text-blue-600">{stats.esteMes}</p>
+          <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+            <FileBarChart2 size={18} />
           </div>
         </div>
 
-        {/* FILTROS */}
-        <div className="flex flex-col md:flex-row gap-3 mb-6">
-          <select
-            className="border px-4 py-2 rounded-lg"
-            value={filtroTipo}
-            onChange={(e) => setFiltroTipo(e.target.value)}
-          >
-            <option value="">Todos los tipos</option>
-            <option value="Inventario General">Inventario General</option>
-            <option value="Movimientos">Movimientos</option>
-            <option value="Stock Bajo">Stock Bajo</option>
-          </select>
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-[0_8px_20px_rgba(0,0,0,0.02)] flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-slate-500">Este Mes</p>
+            <h2 className="text-3xl font-extrabold text-blue-600 mt-1">{stats.esteMes}</h2>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100">
+            <FileBarChart2 size={18} />
+          </div>
+        </div>
+      </div>
 
-          <select
-            className="border px-4 py-2 rounded-lg"
-            value={filtroFormato}
-            onChange={(e) => setFiltroFormato(e.target.value)}
-          >
-            <option value="">Todos los formatos</option>
-            <option value="PDF">PDF</option>
-            <option value="Excel">Excel</option>
-          </select>
+      {/* FILTROS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <select
+          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-600 cursor-pointer"
+          value={filtroTipo}
+          onChange={(e) => setFiltroTipo(e.target.value)}
+        >
+          <option value="">Todos los tipos</option>
+          <option value="Inventario General">Inventario General</option>
+          <option value="Movimientos">Movimientos</option>
+          <option value="Stock Bajo">Stock Bajo</option>
+        </select>
 
+        <select
+          className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-600 cursor-pointer"
+          value={filtroFormato}
+          onChange={(e) => setFiltroFormato(e.target.value)}
+        >
+          <option value="">Todos los formatos</option>
+          <option value="PDF">PDF</option>
+          <option value="Excel">Excel</option>
+        </select>
+
+        <div className="relative w-full">
+          <Calendar size={15} className="absolute left-3.5 top-3 text-slate-400" />
           <input
             type="date"
-            className="border px-4 py-2 rounded-lg"
+            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 outline-none text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-sm text-slate-600"
             value={filtroFecha}
             onChange={(e) => setFiltroFecha(e.target.value)}
           />
         </div>
+      </div>
 
-        {/* TABLA */}
-        <div className="bg-white rounded-xl shadow border overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50">
+      {/* TABLA */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_20px_rgba(0,0,0,0.02)] overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead className="bg-slate-50/75 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
               <tr>
-                <th className="p-4">Tipo</th>
-                <th className="p-4">Formato</th>
-                <th className="p-4">Usuario</th>
-                <th className="p-4">Fecha</th>
-                <th className="p-4">Archivo</th>
+                <th className="text-left px-6 py-4">Tipo</th>
+                <th className="text-left px-6 py-4 w-32">Formato</th>
+                <th className="text-left px-6 py-4">Generado por</th>
+                <th className="text-left px-6 py-4">Fecha</th>
+                <th className="text-center px-6 py-4 w-40">Acción</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
               {reportes.map((r) => (
-                <tr key={r.id_reporte} className="border-t">
-                  <td className="p-4">{r.tipo}</td>
-                  <td className="p-4">
+                <tr key={r.id_reporte} className="hover:bg-blue-50/15 transition duration-150">
+                  <td className="px-6 py-4 font-bold text-slate-800">{r.tipo}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     {r.formato === "PDF" ? (
-                      <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">
+                      <span className="inline-block text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-100 px-2.5 py-0.5 rounded-lg uppercase tracking-wide">
                         PDF
                       </span>
                     ) : (
-                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
+                      <span className="inline-block text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-0.5 rounded-lg uppercase tracking-wide">
                         Excel
                       </span>
                     )}
                   </td>
-                  <td className="p-4">{r.Usuario?.nombre}</td>
-                  <td className="p-4">{new Date(r.fecha_generacion).toLocaleString()}</td>
-                  <td className="p-4">
-                    <button
-                      onClick={() => descargar(r.id_reporte)}
-                      className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                    >
-                      <Download size={18} /> Descargar
-                    </button>
+                  <td className="px-6 py-4 font-semibold text-slate-700">{r.Usuario?.nombre || "—"}</td>
+                  <td className="px-6 py-4 text-slate-500 whitespace-nowrap">
+                    {formatPeru(r.fecha_generacion)}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-center">
+                      <button
+                        onClick={() => descargar(r.id_reporte)}
+                        className="inline-flex items-center justify-center gap-1.5 bg-blue-50 text-[#1B59F8] border border-blue-200/50 hover:bg-blue-100 px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer"
+                      >
+                        <Download size={13} />
+                        Descargar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
+
+              {reportes.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="text-center py-12 text-slate-400 font-semibold bg-slate-50/20">
+                    No hay reportes registrados.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
-
-        {modal && <ModalGenerarReporte close={() => setModal(false)} refresh={obtenerReportes} />}
       </div>
 
+      {modal && <ModalGenerarReporte close={() => setModal(false)} refresh={obtenerReportes} />}
+    </div>
   );
 }

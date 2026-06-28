@@ -12,6 +12,7 @@ const sequelize = new Sequelize(
     port: process.env.DB_PORT,
     dialect: 'postgres',
     logging: false,
+    timezone: '+00:00', // Fuerza UTC en todas las fechas devueltas por la API
     dialectOptions: isSSL
       ? {
           ssl: {

@@ -73,9 +73,9 @@ __pycache__/
 /ml-service/dataset_split/
 /ml-service/dataset-raw/
 
-# Modelos entrenados pesados
-/ml-service/models/*.keras
-/ml-service/models/*.h5
+# Modelos entrenados pesados (INCLUIDOS para deploy en Render)
+# /ml-service/models/*.keras
+# /ml-service/models/*.h5
 
 # ============================================
 # Flutter

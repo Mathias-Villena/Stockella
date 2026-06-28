@@ -31,9 +31,22 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
   String formatFecha(dynamic fecha) {
     if (fecha == null) return "-";
-    final date = DateTime.tryParse(fecha.toString());
+    final date = DateTime.tryParse(fecha.toString())?.toLocal();
     if (date == null) return fecha.toString();
-    return "${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}";
+
+    final meses = [
+      "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+      "Jul", "Ago", "Set", "Oct", "Nov", "Dic"
+    ];
+    final mesStr = (date.month >= 1 && date.month <= 12) ? meses[date.month - 1] : "";
+
+    final period = date.hour >= 12 ? "PM" : "AM";
+    var hour12 = date.hour % 12;
+    if (hour12 == 0) hour12 = 12;
+    final hourStr = hour12.toString().padLeft(2, '0');
+    final minStr = date.minute.toString().padLeft(2, '0');
+
+    return "${date.day} de $mesStr, $hourStr:$minStr $period";
   }
 
   Future<void> atender(int idAlerta) async {

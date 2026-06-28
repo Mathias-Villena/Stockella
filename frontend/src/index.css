@@ -104,3 +104,49 @@ body {
 .custom-scroll::-webkit-scrollbar-thumb:hover {
   background: #b4b4b4;
 }
+
+/* ================================
+   GLOW EFFECTS & SHADOWS STOCK V2
+   ================================ */
+.glow-blue {
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.08), 0 8px 16px -6px rgba(59, 130, 246, 0.05);
+  border-left: 4px solid #3b82f6;
+}
+.glow-emerald {
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.08), 0 8px 16px -6px rgba(16, 185, 129, 0.05);
+  border-left: 4px solid #10b981;
+}
+.glow-amber {
+  box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.08), 0 8px 16px -6px rgba(245, 158, 11, 0.05);
+  border-left: 4px solid #f59e0b;
+}
+.glow-rose {
+  box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.08), 0 8px 16px -6px rgba(244, 63, 94, 0.05);
+  border-left: 4px solid #f43f5e;
+}
+
+/* ================================
+   UTILITIES
+   ================================ */
+.premium-gradient-text {
+  background: linear-gradient(to right, #1b59f8, #6366f1, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-border-top {
+  position: relative;
+}
+.gradient-border-top::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(to right, #1b59f8, #6366f1, #a855f7);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  z-index: 10;
+}
+

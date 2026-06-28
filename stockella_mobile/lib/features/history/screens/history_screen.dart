@@ -44,10 +44,32 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   String formatFecha(dynamic fecha) {
     if (fecha == null) return "-";
-    final date = DateTime.tryParse(fecha.toString());
+    final date = DateTime.tryParse(fecha.toString())?.toLocal();
     if (date == null) return fecha.toString();
 
-    return "${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}";
+    final meses = [
+      "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+      "Jul", "Ago", "Set", "Oct", "Nov", "Dic"
+    ];
+    final mesStr = (date.month >= 1 && date.month <= 12) ? meses[date.month - 1] : "";
+
+    final period = date.hour >= 12 ? "PM" : "AM";
+    var hour12 = date.hour % 12;
+    if (hour12 == 0) hour12 = 12;
+    final hourStr = hour12.toString().padLeft(2, '0');
+    final minStr = date.minute.toString().padLeft(2, '0');
+
+    return "${date.day} de $mesStr, $hourStr:$minStr $period";
+  }
+
+  Widget _buildFallbackIcon(bool isEntrada) {
+    return Center(
+      child: Icon(
+        LucideIcons.package,
+        size: 22,
+        color: isEntrada ? const Color(0xFF2563EB) : const Color(0xFFEF4444),
+      ),
+    );
   }
 
   @override
@@ -152,6 +174,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
                   final isEntrada = tipo == "Entrada";
 
+                  final imagenProductos = producto?["ImagenProductos"];
+                  final imageUrl = (imagenProductos is List && imagenProductos.isNotEmpty)
+                      ? imagenProductos[0]["url"]
+                      : null;
+
                   return Container(
                     margin: const EdgeInsets.only(bottom: 14),
                     padding: const EdgeInsets.all(16),
@@ -168,23 +195,53 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                     child: Row(
                       children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: isEntrada
-                                ? const Color(0xFFDBEAFE)
-                                : const Color(0xFFFEE2E2),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(
-                            isEntrada
-                                ? LucideIcons.arrowDownToLine
-                                : LucideIcons.arrowUpFromLine,
-                            color: isEntrada
-                                ? const Color(0xFF2563EB)
-                                : const Color(0xFFEF4444),
-                          ),
+                        Stack(
+                          children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isEntrada
+                                      ? const Color(0xFF3B82F6).withOpacity(0.15)
+                                      : const Color(0xFFEF4444).withOpacity(0.15),
+                                  width: 2,
+                                ),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: imageUrl != null && imageUrl.toString().isNotEmpty
+                                    ? Image.network(
+                                        imageUrl.toString(),
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            _buildFallbackIcon(isEntrada),
+                                      )
+                                    : _buildFallbackIcon(isEntrada),
+                              ),
+                            ),
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(2.5),
+                                decoration: BoxDecoration(
+                                  color: isEntrada
+                                      ? const Color(0xFF10B981)
+                                      : const Color(0xFFEF4444),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white, width: 1.5),
+                                ),
+                                child: Icon(
+                                  isEntrada ? LucideIcons.arrowDown : LucideIcons.arrowUp,
+                                  size: 10,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(width: 14),
 
